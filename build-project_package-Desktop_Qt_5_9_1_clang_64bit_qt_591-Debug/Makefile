@@ -51,9 +51,13 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../project_package/main.cpp \
-		../project_package/particlewriter.cpp 
+		../project_package/particlewriter.cpp \
+		../project_package/particlegrid.cpp \
+		../project_package/particle.cpp 
 OBJECTS       = main.o \
-		particlewriter.o
+		particlewriter.o \
+		particlegrid.o \
+		particle.o
 DIST          = /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/qdevice.pri \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/device_config.prf \
@@ -237,8 +241,12 @@ DIST          = /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/exceptions.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/yacc.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/lex.prf \
-		../project_package/project_package.pro ../project_package/particlewriter.h ../project_package/main.cpp \
-		../project_package/particlewriter.cpp
+		../project_package/project_package.pro ../project_package/particlewriter.h \
+		../project_package/particlegrid.h \
+		../project_package/particle.h ../project_package/main.cpp \
+		../project_package/particlewriter.cpp \
+		../project_package/particlegrid.cpp \
+		../project_package/particle.cpp
 QMAKE_TARGET  = project_package
 DESTDIR       = 
 TARGET        = project_package
@@ -641,8 +649,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents ../project_package/particlewriter.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../project_package/main.cpp ../project_package/particlewriter.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../project_package/particlewriter.h ../project_package/particlegrid.h ../project_package/particle.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../project_package/main.cpp ../project_package/particlewriter.cpp ../project_package/particlegrid.cpp ../project_package/particle.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -695,8 +703,10 @@ main.o: ../project_package/main.cpp /Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.fr
 		../project_package/particlewriter.h \
 		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QString \
 		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qstring.h \
-		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QDir \
-		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qdir.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QFile \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		../project_package/Eigen/Eigen/Core \
 		../project_package/Eigen/Eigen/src/Core/util/DisableStupidWarnings.h \
 		../project_package/Eigen/Eigen/src/Core/util/Macros.h \
@@ -845,8 +855,12 @@ main.o: ../project_package/main.cpp /Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.fr
 particlewriter.o: ../project_package/particlewriter.cpp ../project_package/particlewriter.h \
 		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QString \
 		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qstring.h \
-		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QDir \
-		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qdir.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QFile \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QCoreApplication \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qcoreapplication.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
 		../project_package/Eigen/Eigen/Core \
 		../project_package/Eigen/Eigen/src/Core/util/DisableStupidWarnings.h \
 		../project_package/Eigen/Eigen/src/Core/util/Macros.h \
@@ -991,6 +1005,152 @@ particlewriter.o: ../project_package/particlewriter.cpp ../project_package/parti
 		../project_package/Eigen/Eigen/src/StlSupport/StdVector.h \
 		../project_package/Eigen/Eigen/src/StlSupport/details.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o particlewriter.o ../project_package/particlewriter.cpp
+
+particlegrid.o: ../project_package/particlegrid.cpp ../project_package/particlegrid.h \
+		../project_package/Eigen/Eigen/Core \
+		../project_package/Eigen/Eigen/src/Core/util/DisableStupidWarnings.h \
+		../project_package/Eigen/Eigen/src/Core/util/Macros.h \
+		../project_package/Eigen/Eigen/src/Core/util/MKL_support.h \
+		../project_package/Eigen/Eigen/src/misc/blas.h \
+		../project_package/Eigen/Eigen/src/Core/util/Constants.h \
+		../project_package/Eigen/Eigen/src/Core/util/Meta.h \
+		../project_package/Eigen/Eigen/src/Core/util/ForwardDeclarations.h \
+		../project_package/Eigen/Eigen/src/Core/util/StaticAssert.h \
+		../project_package/Eigen/Eigen/src/Core/util/XprHelper.h \
+		../project_package/Eigen/Eigen/src/Core/util/Memory.h \
+		../project_package/Eigen/Eigen/src/Core/NumTraits.h \
+		../project_package/Eigen/Eigen/src/Core/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/GenericPacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/MathFunctionsImpl.h \
+		../project_package/Eigen/Eigen/src/Core/arch/Default/ConjHelper.h \
+		../project_package/Eigen/Eigen/src/Core/arch/SSE/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX512/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX512/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/SSE/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/arch/SSE/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AVX/TypeCasting.h \
+		../project_package/Eigen/Eigen/src/Core/arch/SSE/TypeCasting.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AltiVec/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AltiVec/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/AltiVec/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/arch/NEON/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/NEON/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/NEON/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/arch/ZVector/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/ZVector/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/ZVector/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/Half.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/PacketMathHalf.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/TypeCasting.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/PacketMath.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/MathFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/arch/Default/Settings.h \
+		../project_package/Eigen/Eigen/src/Core/functors/TernaryFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/functors/BinaryFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/functors/UnaryFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/functors/NullaryFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/functors/StlFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/functors/AssignmentFunctors.h \
+		../project_package/Eigen/Eigen/src/Core/arch/CUDA/Complex.h \
+		../project_package/Eigen/Eigen/src/Core/IO.h \
+		../project_package/Eigen/Eigen/src/Core/DenseCoeffsBase.h \
+		../project_package/Eigen/Eigen/src/Core/DenseBase.h \
+		../project_package/Eigen/Eigen/src/plugins/BlockMethods.h \
+		../project_package/Eigen/Eigen/src/Core/MatrixBase.h \
+		../project_package/Eigen/Eigen/src/plugins/CommonCwiseUnaryOps.h \
+		../project_package/Eigen/Eigen/src/plugins/CommonCwiseBinaryOps.h \
+		../project_package/Eigen/Eigen/src/plugins/MatrixCwiseUnaryOps.h \
+		../project_package/Eigen/Eigen/src/plugins/MatrixCwiseBinaryOps.h \
+		../project_package/Eigen/Eigen/src/Core/EigenBase.h \
+		../project_package/Eigen/Eigen/src/Core/Product.h \
+		../project_package/Eigen/Eigen/src/Core/CoreEvaluators.h \
+		../project_package/Eigen/Eigen/src/Core/AssignEvaluator.h \
+		../project_package/Eigen/Eigen/src/Core/Assign.h \
+		../project_package/Eigen/Eigen/src/Core/ArrayBase.h \
+		../project_package/Eigen/Eigen/src/plugins/ArrayCwiseUnaryOps.h \
+		../project_package/Eigen/Eigen/src/plugins/ArrayCwiseBinaryOps.h \
+		../project_package/Eigen/Eigen/src/Core/util/BlasUtil.h \
+		../project_package/Eigen/Eigen/src/Core/DenseStorage.h \
+		../project_package/Eigen/Eigen/src/Core/NestByValue.h \
+		../project_package/Eigen/Eigen/src/Core/ReturnByValue.h \
+		../project_package/Eigen/Eigen/src/Core/NoAlias.h \
+		../project_package/Eigen/Eigen/src/Core/PlainObjectBase.h \
+		../project_package/Eigen/Eigen/src/Core/Matrix.h \
+		../project_package/Eigen/Eigen/src/Core/Array.h \
+		../project_package/Eigen/Eigen/src/Core/CwiseTernaryOp.h \
+		../project_package/Eigen/Eigen/src/Core/CwiseBinaryOp.h \
+		../project_package/Eigen/Eigen/src/Core/CwiseUnaryOp.h \
+		../project_package/Eigen/Eigen/src/Core/CwiseNullaryOp.h \
+		../project_package/Eigen/Eigen/src/Core/CwiseUnaryView.h \
+		../project_package/Eigen/Eigen/src/Core/SelfCwiseBinaryOp.h \
+		../project_package/Eigen/Eigen/src/Core/Dot.h \
+		../project_package/Eigen/Eigen/src/Core/StableNorm.h \
+		../project_package/Eigen/Eigen/src/Core/Stride.h \
+		../project_package/Eigen/Eigen/src/Core/MapBase.h \
+		../project_package/Eigen/Eigen/src/Core/Map.h \
+		../project_package/Eigen/Eigen/src/Core/Ref.h \
+		../project_package/Eigen/Eigen/src/Core/Block.h \
+		../project_package/Eigen/Eigen/src/Core/VectorBlock.h \
+		../project_package/Eigen/Eigen/src/Core/Transpose.h \
+		../project_package/Eigen/Eigen/src/Core/DiagonalMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/Diagonal.h \
+		../project_package/Eigen/Eigen/src/Core/DiagonalProduct.h \
+		../project_package/Eigen/Eigen/src/Core/Redux.h \
+		../project_package/Eigen/Eigen/src/Core/Visitor.h \
+		../project_package/Eigen/Eigen/src/Core/Fuzzy.h \
+		../project_package/Eigen/Eigen/src/Core/Swap.h \
+		../project_package/Eigen/Eigen/src/Core/CommaInitializer.h \
+		../project_package/Eigen/Eigen/src/Core/GeneralProduct.h \
+		../project_package/Eigen/Eigen/src/Core/Solve.h \
+		../project_package/Eigen/Eigen/src/Core/Inverse.h \
+		../project_package/Eigen/Eigen/src/Core/SolverBase.h \
+		../project_package/Eigen/Eigen/src/Core/PermutationMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/Transpositions.h \
+		../project_package/Eigen/Eigen/src/Core/TriangularMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/SelfAdjointView.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralBlockPanelKernel.h \
+		../project_package/Eigen/Eigen/src/Core/products/Parallelizer.h \
+		../project_package/Eigen/Eigen/src/Core/ProductEvaluators.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixVector.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/SolveTriangular.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixMatrixTriangular.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointMatrixVector.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointMatrixMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointProduct.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointRank2Update.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularMatrixVector.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularMatrixMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularSolverMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularSolverVector.h \
+		../project_package/Eigen/Eigen/src/Core/BandMatrix.h \
+		../project_package/Eigen/Eigen/src/Core/CoreIterators.h \
+		../project_package/Eigen/Eigen/src/Core/ConditionEstimator.h \
+		../project_package/Eigen/Eigen/src/Core/BooleanRedux.h \
+		../project_package/Eigen/Eigen/src/Core/Select.h \
+		../project_package/Eigen/Eigen/src/Core/VectorwiseOp.h \
+		../project_package/Eigen/Eigen/src/Core/Random.h \
+		../project_package/Eigen/Eigen/src/Core/Replicate.h \
+		../project_package/Eigen/Eigen/src/Core/Reverse.h \
+		../project_package/Eigen/Eigen/src/Core/ArrayWrapper.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixMatrix_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixVector_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/GeneralMatrixMatrixTriangular_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointMatrixMatrix_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/SelfadjointMatrixVector_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularMatrixMatrix_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularMatrixVector_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/products/TriangularSolverMatrix_BLAS.h \
+		../project_package/Eigen/Eigen/src/Core/Assign_MKL.h \
+		../project_package/Eigen/Eigen/src/Core/GlobalFunctions.h \
+		../project_package/Eigen/Eigen/src/Core/util/ReenableStupidWarnings.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o particlegrid.o ../project_package/particlegrid.cpp
+
+particle.o: ../project_package/particle.cpp ../project_package/particle.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o particle.o ../project_package/particle.cpp
 
 ####### Install
 

@@ -2,22 +2,22 @@
 #include "particlewriter.h"
 #include <iostream>
 
-float random() {
+float randomFloat() {
     float r = ((float) std::rand() / (RAND_MAX));
     return r;
 }
 
 Eigen::Vector3f randomPointInBound(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax) {
-    float x = random() * (xmax - xmin) + xmin;
-    float y = random() * (ymax - ymin) + ymin;
-    float z = random() * (zmax - zmin) + zmin;
+    float x = randomFloat() * (xmax - xmin) + xmin;
+    float y = randomFloat() * (ymax - ymin) + ymin;
+    float z = randomFloat() * (zmax - zmin) + zmin;
     return Eigen::Vector3f(x, y, z);
 }
 
 Eigen::Vector3f randomPointAroundPoint(Eigen::Vector3f source, float r) {
-    float yaw = random() * 3.1415926 * 2;
-    float pitch = random() * 3.1415926 * 2;
-    float radius = random() * r + r;
+    float yaw = randomFloat() * 3.1415926 * 2;
+    float pitch = randomFloat() * 3.1415926 * 2;
+    float radius = randomFloat() * r + r;
 
     float x = radius * std::sin(pitch) * std::cos(yaw) + source[0];
     float y = radius * std::sin(pitch) * std::sin(yaw) + source[1];

@@ -11,9 +11,13 @@ public:
 
     // TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
+    int Xdim;
+    int Ydim;
+    int Zdim;
     float mass[1];
-    float velocity[1];
+    Eigen::Vector3f velocity[1];
     Eigen::Vector3f position[1];
+    float gridSize;
     // end of 3D grids
 
 
@@ -22,7 +26,7 @@ public:
     Particle particles[1]; // TODO: update to proper size
 
     // Returns a vector of [x][y][z] indices for all cells affected by a particle
-    std::vector<Eigen::Vector3i, Eigen::aligned_allocator<Eigen::Vector3i>> getNeighbors(Eigen::Vector3f pPos);
+    std::vector<int> getNeighbors(Eigen::Vector3f pPos);
 
     // Returns w_ip of particle with position pPos to grid[x][y][z]
     float computeWeight(Eigen::Vector3f pPos, int x, int y, int z);

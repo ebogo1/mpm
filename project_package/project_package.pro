@@ -18,7 +18,8 @@ SOURCES += \
         main.cpp \
     particlewriter.cpp \
     particlegrid.cpp \
-    particle.cpp
+    particle.cpp \
+    poisson.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -28,6 +29,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     particlewriter.h \
     particlegrid.h \
-    particle.h
+    particle.h \
+    poisson.h
 
 INCLUDE += Eigen

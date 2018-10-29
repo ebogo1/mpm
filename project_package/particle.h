@@ -10,7 +10,7 @@ public:
 
     float m; // mass
     Eigen::Vector3f x; // position
-    float v; // velocity
+    Eigen::Vector3f v; // velocity
 
 };
 

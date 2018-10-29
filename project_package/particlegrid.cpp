@@ -5,24 +5,60 @@ ParticleGrid::ParticleGrid()
 
 }
 
-std::vector<Eigen::Vector3i, Eigen::aligned_allocator<Eigen::Vector3i>> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
-    std::vector<Eigen::Vector3i, Eigen::aligned_allocator<Eigen::Vector3i>> positions;
-    // TODO
+std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
+    std::vector<int> positions;
+    Eigen::Vector3f gridPos = pPos / gridSize;
+    for (int i = -1; i < 2; i++) {
+        for (int j = -1; j < 2; j++) {
+            for (int k = -1; k < 2; k++) {
+                Eigen::Vector3f newPos = gridPos + Eigen::Vector3f(i, j, k);
+                positions.push_back(newPos[0] + Ydim * (newPos[1] + Zdim * newPos[2]));
+            }
+        }
+    }
     return positions;
 }
 
+float computeWeightComponent(float x) {
+    if (std::abs(x) >= 0 && std::abs(x) < 1) {
+        return 0.5 * std::pow(std::abs(x), 3.0) - std::pow(x, 2.0) + 2.0/3.0;
+    }
+    else if (std::abs(x) >= 1 && std::abs(x) < 2) {
+        return -(1.0/6.0) * std::pow(std::abs(x), 3.0) + std::pow(x, 2.0) - 2.0 * std::abs(x) + (4.0/3.0);
+    }
+    else {
+        return 0;
+    }
+}
+
 float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
-    // TODO
-    return 0.f;
+    float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - x * gridSize));
+    float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - y * gridSize));
+    float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - z * gridSize));
+    return Nx * Ny * Nz;
 }
 
 void ParticleGrid::populateGrid() {
+
+    //For each particle
     for(auto p : particles) {
-        // TODO:
-        // 1. call computeWeight for neighboring cells
-        std::vector<Eigen::Vector3i, Eigen::aligned_allocator<Eigen::Vector3i>> neighbors = getNeighbors(p.x);
-        // 2. each grid += weight * particle's value
+        std::vector<int> gridCells = getNeighbors(p.x);
+
+        //For each relevant grid cell
+        for(int c : gridCells) {
+
+            //Sum particle attributes times weights into grid cells
+            int z = c / (Xdim * Ydim);
+            int temp = c - (z * Xdim * Ydim);
+            int y = temp / Xdim;
+            int x = temp % Xdim;
+
+            float weight = computeWeight(p.x, x, y, z);
+            mass[c] += p.m * weight;
+            velocity[c] += p.v * weight;
+        }
     }
+
 }
 
 void ParticleGrid::runUpdate() {

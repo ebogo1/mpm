@@ -9,9 +9,13 @@ class Particle
 public:
     Particle();
 
+    // MPM attributes
     float m; // mass
     Eigen::Vector3f x; // position
     Eigen::Vector3f v; // velocity
+
+    // APIC
+    Eigen::Matrix3f C; // Affine velocity matrix
 
     // Maps a grid cell to corresponding weight
     QMap<int, float> weights;

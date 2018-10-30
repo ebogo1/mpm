@@ -3,6 +3,7 @@
 
 #include <particle.h>
 #include "Eigen/Eigen/StdVector"
+#include "Eigen/Eigen/Eigen"
 
 class ParticleGrid
 {
@@ -11,6 +12,8 @@ public:
 
     int numParticles; // # of particles in simulation
     int numCells; // # of grid cells
+
+    float deltaTime; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
@@ -23,15 +26,16 @@ public:
     float gridSize;
     // end of 3D grids
 
-    /// Both maps are reset each iteration
     // Maps each cell to weighted particles for G2P
     QMap<int, std::vector<Particle*>> adjParticles;
 
-
-
-
     // Contains all particles for MPM
     Particle particles[1]; // TODO: update to proper size
+
+
+
+    // Returns worldspace position of cell c
+    Eigen::Vector3f getCellPos(int c);
 
     // Returns a vector of [x][y][z] indices for all cells affected by a particle
     std::vector<int> getNeighbors(Eigen::Vector3f pPos);
@@ -43,7 +47,7 @@ public:
     void populateGrid();
 
     // Performs update on grid cell values
-    void runUpdate();
+    void runGridUpdate();
 
     // Sets appropriate weighted values for each particle (G2P)
     void populateParticles();

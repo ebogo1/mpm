@@ -1,8 +1,15 @@
 #include "particlegrid.h"
 
-ParticleGrid::ParticleGrid()
-{
+ParticleGrid::ParticleGrid() {
+    // TODO: Initialize member variables here
+}
 
+Eigen::Vector3f ParticleGrid::getCellPos(int c) {
+    int z = c / (Xdim * Ydim);
+    int temp = c - (z * Xdim * Ydim);
+    int y = temp / Xdim;
+    int x = temp % Xdim;
+    return gridSize * Eigen::Vector3f(x, y, z);
 }
 
 std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
@@ -39,11 +46,10 @@ float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
 }
 
 void ParticleGrid::populateGrid() {
-    // Reset the adjParticles map
     adjParticles.clear();
 
-    // For each particle
-    for(auto p : particles) {
+    // First, compute total mass at each grid cell
+    for(Particle p : particles) {
         std::vector<int> gridCells = getNeighbors(p.x);
 
         // For each relevant grid cell
@@ -55,8 +61,8 @@ void ParticleGrid::populateGrid() {
             int x = temp % Xdim;
 
             float weight = computeWeight(p.x, x, y, z);
+            // Mass summation
             mass[c] += p.m * weight;
-            velocity[c] += p.v * weight;
 
             // Update weight maps
             std::vector<Particle*> particles = std::vector<Particle*>();
@@ -73,18 +79,62 @@ void ParticleGrid::populateGrid() {
         }
     }
 
+    // Then compute APIC velocity using total mass
+    for(int i = 0; i < numCells; i++) {
+        for(Particle* p : adjParticles.find(i).value()) {
+            Eigen::Vector3f cellPos = getCellPos(i);
+            // APIC velocity summation
+            float w_ip = p->weights.find(i).value();
+            velocity[i] += w_ip * p->m * (p->v + p->C * (cellPos - p->x)) / mass[i];
+        }
+    }
+
+    // Clear out particle velocities
+    for(Particle p : particles) {
+        p.v = Eigen::Vector3f(0.f, 0.f, 0.f);
+    }
+
+    // Extra check for APIC Method
+    for(int i = 0; i < numCells; ++i) {
+        if(mass[i] == 0.f) {
+            velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
+        }
+    }
+
 }
 
-void ParticleGrid::runUpdate() {
+void ParticleGrid::runGridUpdate() {
     // TODO
     return;
 }
 
 void ParticleGrid::populateParticles() {
+    // Compute new particle velocities
     for(int i = 0; i < numCells; ++i) {
-        for(auto p : adjParticles.find(i).value()) {
+        for(Particle* p : adjParticles.find(i).value()) {
             float w_ip = p->weights.find(i).value();
-            p->v = w_ip * p->m * velocity[i];
+            p->v += w_ip * p->m * velocity[i];
         }
+    }
+    // Compute new Affine velocity matrix
+    for(Particle p : particles) {
+        Eigen::Matrix3f B = Eigen::Matrix3f();
+        B << 0.f, 0.f, 0.f,
+             0.f, 0.f, 0.f,
+             0.f, 0.f, 0.f;
+        for(int c : p.weights.keys()) {
+            Eigen::Vector3f x = getCellPos(c) - p.x;
+            B += p.weights.find(c).value() * velocity[c] * x.transpose();
+        }
+        float d = gridSize * gridSize / 3.f;
+        Eigen::Matrix3f D = Eigen::Matrix3f();
+        D << d, 0.f, 0.f,
+             0.f, d, 0.f,
+             0.f, 0.f, d;
+        p.C = B * D.inverse();
+    }
+    // Compute new particle positions
+    for(Particle p : particles) {
+        p.x += deltaTime * p.v;
     }
 }

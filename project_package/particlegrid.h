@@ -9,7 +9,10 @@ class ParticleGrid
 public:
     ParticleGrid();
 
-    // TODO: generate particles with Poisson and initialize arrays appropriately
+    int numParticles; // # of particles in simulation
+    int numCells; // # of grid cells
+
+    /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
     int Xdim;
     int Ydim;
@@ -19,6 +22,11 @@ public:
     Eigen::Vector3f position[1];
     float gridSize;
     // end of 3D grids
+
+    /// Both maps are reset each iteration
+    // Maps each cell to weighted particles for G2P
+    QMap<int, std::vector<Particle*>> adjParticles;
+
 
 
 
@@ -36,6 +44,9 @@ public:
 
     // Performs update on grid cell values
     void runUpdate();
+
+    // Sets appropriate weighted values for each particle (G2P)
+    void populateParticles();
 
 };
 

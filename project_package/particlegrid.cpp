@@ -39,15 +39,16 @@ float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
 }
 
 void ParticleGrid::populateGrid() {
+    // Reset the adjParticles map
+    adjParticles.clear();
 
-    //For each particle
+    // For each particle
     for(auto p : particles) {
         std::vector<int> gridCells = getNeighbors(p.x);
 
-        //For each relevant grid cell
-        for(int c : gridCells) {
-
-            //Sum particle attributes times weights into grid cells
+        // For each relevant grid cell
+        for(int c : gridCells) {            
+            // Sum particle attributes times weights into grid cells
             int z = c / (Xdim * Ydim);
             int temp = c - (z * Xdim * Ydim);
             int y = temp / Xdim;
@@ -56,6 +57,19 @@ void ParticleGrid::populateGrid() {
             float weight = computeWeight(p.x, x, y, z);
             mass[c] += p.m * weight;
             velocity[c] += p.v * weight;
+
+            // Update weight maps
+            std::vector<Particle*> particles = std::vector<Particle*>();
+            particles.push_back(&p);
+            if(!adjParticles.contains(c)) {
+                adjParticles.insert(c, particles);
+            }
+            else {
+                particles = adjParticles.find(c).value();
+                particles.push_back(&p);
+                adjParticles.insert(c, particles);
+            }
+            p.weights.insert(c, weight);
         }
     }
 
@@ -64,4 +78,13 @@ void ParticleGrid::populateGrid() {
 void ParticleGrid::runUpdate() {
     // TODO
     return;
+}
+
+void ParticleGrid::populateParticles() {
+    for(int i = 0; i < numCells; ++i) {
+        for(auto p : adjParticles.find(i).value()) {
+            float w_ip = p->weights.find(i).value();
+            p->v = w_ip * p->m * velocity[i];
+        }
+    }
 }

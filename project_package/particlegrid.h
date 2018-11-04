@@ -3,6 +3,7 @@
 
 #include <particle.h>
 #include <poisson.h>
+#include <particlewriter.h>
 #include "Eigen/Eigen/StdVector"
 #include "Eigen/Eigen/Eigen"
 
@@ -11,8 +12,11 @@ class ParticleGrid
 public:
     ParticleGrid();
 
+    int iter;
+    ParticleWriter writer;
+
     const static int numParticles = 637; // # of particles in simulation
-    const static int numCells = 729; // # of grid cells, 9^3
+    const static int numCells = 1331; // # of grid cells, 11^3
 
     float deltaTime = 1.f / 9.f; // Duration of one step
 
@@ -37,6 +41,8 @@ public:
 
     // Returns worldspace position of cell c
     Eigen::Vector3f getCellPos(int c);
+    // Return gridspace coords of cell c
+    Eigen::Vector3i getCellCoords(int c);
 
     // Returns a vector of [x][y][z] indices for all cells affected by a particle
     std::vector<int> getNeighbors(Eigen::Vector3f pPos);
@@ -52,6 +58,12 @@ public:
 
     // Sets appropriate weighted values for each particle (G2P)
     void populateParticles();
+
+    void runMPM() {
+        populateGrid();
+        runGridUpdate();
+        populateParticles();
+    }
 
 };
 

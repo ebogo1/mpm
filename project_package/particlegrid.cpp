@@ -6,6 +6,8 @@ ParticleGrid::ParticleGrid() {
     for(int i = 0; i < positions.size(); ++i) {
         particles[i] = Particle(Eigen::Vector3f(positions[i]));
     }
+    writer = ParticleWriter();
+    iter = 0;
 }
 
 Eigen::Vector3f ParticleGrid::getCellPos(int c) {
@@ -13,7 +15,15 @@ Eigen::Vector3f ParticleGrid::getCellPos(int c) {
     int temp = c - (z * Xdim * Ydim);
     int y = temp / Xdim;
     int x = temp % Xdim;
-    return gridSize * Eigen::Vector3f(x, y, z);
+    return gridSize * Eigen::Vector3f(x, y, z) - Eigen::Vector3f(gridSize, gridSize, gridSize);
+}
+
+Eigen::Vector3i ParticleGrid::getCellCoords(int c) {
+    int z = c / (Xdim * Ydim);
+    int temp = c - (z * Xdim * Ydim);
+    int y = temp / Xdim;
+    int x = temp % Xdim;
+    return Eigen::Vector3i(x, y, z);
 }
 
 std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
@@ -109,7 +119,20 @@ void ParticleGrid::populateGrid() {
 
 void ParticleGrid::runGridUpdate() {
     // TODO
-    return;
+    for(int i = 0; i < numCells; ++i) {
+        velocity[i][1] -= 0.1f;
+    }
+}
+
+// Helper function to clamp Vector3fs
+Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
+    Eigen::Vector3f ans;
+    for(int i = 0; i < 2; ++i) {
+        ans[0] = std::max(std::min(v[0], max), min);
+        ans[1] = std::max(std::min(v[1], max), min);
+        ans[2] = std::max(std::min(v[2], max), min);
+    }
+    return ans;
 }
 
 void ParticleGrid::populateParticles() {
@@ -140,5 +163,14 @@ void ParticleGrid::populateParticles() {
     // Compute new particle positions
     for(Particle p : particles) {
         p.x += deltaTime * p.v;
+        p.x = Clamp(p.x, 0.f, 1.f);
     }
+    // Write to .obj
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;
+    for(int i = 0; i < numParticles; ++i) {
+        ps.push_back(particles[i].x);
+    }
+    QString name = QString("frame" + iter);
+    writer.writeObjs(ps, name);
+    iter++;
 }

@@ -10,6 +10,8 @@ public:
     Particle();
     Particle(Eigen::Vector3f pos);
 
+    int index;
+
     // MPM attributes
     float m; // mass
     Eigen::Vector3f x; // position

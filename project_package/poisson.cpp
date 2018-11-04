@@ -88,7 +88,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
         }
     }
 
-    std::cout << "Finished generating" << std::endl;
+    std::cout << "Finished poisson sampling" << std::endl;
 
     return points;
 }

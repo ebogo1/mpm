@@ -15,7 +15,7 @@ public:
     int iter;
     ParticleWriter writer;
 
-    const static int numParticles = 637; // # of particles in simulation
+    int numParticles; // # of particles in simulation
     const static int numCells = 1331; // # of grid cells, 11^3
 
     float deltaTime = 1.f / 9.f; // Duration of one step
@@ -32,10 +32,10 @@ public:
     // end of 3D grids
 
     // Maps each cell to weighted particles for G2P
-    QMap<int, std::vector<Particle*>> adjParticles;
+    QMap<int, std::vector<int>> adjParticles;
 
     // Contains all particles for MPM
-    Particle particles[numParticles]; // TODO: update to proper size
+    Particle particles[1000]; // TODO: update to proper size
 
 
 

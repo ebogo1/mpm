@@ -17,7 +17,10 @@ int main(int argc, char *argv[])
     ParticleGrid PG = ParticleGrid();
     for(int i = 0; i < 20; ++i) {
         PG.runMPM();
+        std::cout << "Wrote frame " << i << std::endl;
     }
+
+    std::cout << "Finished simulation" << std::endl;
 
     return a.exec();
 }

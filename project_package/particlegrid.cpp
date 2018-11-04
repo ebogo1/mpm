@@ -32,14 +32,24 @@ Eigen::Vector3i ParticleGrid::getCellCoords(int c) {
     return Eigen::Vector3i(x, y, z);
 }
 
+bool inBounds(Eigen::Vector3i v) {
+    return v[0] >= 0 && v[0] < 11 &&
+           v[1] >= 0 && v[1] < 11 &&
+           v[2] >= 0 && v[2] < 11;
+}
+
 std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
     std::vector<int> positions;
-    Eigen::Vector3f gridPos = pPos / gridSize + Eigen::Vector3f(1.f, 1.f, 1.f);
-    for (int i = -1; i < 2; i++) {
-        for (int j = -1; j < 2; j++) {
-            for (int k = -1; k < 2; k++) {
-                Eigen::Vector3f newPos = gridPos + Eigen::Vector3f(i, j, k);
-                positions.push_back(newPos[0] + Ydim * (newPos[1] + Zdim * newPos[2]));
+    Eigen::Vector3f sp = pPos / gridSize;
+    Eigen::Vector3i gridPos = Eigen::Vector3i(std::floor(sp[0]), std::floor(sp[1]), std::floor(sp[2]));
+    gridPos += Eigen::Vector3i(1, 1, 1);
+    for (int i = -2; i < 1; i++) {
+        for (int j = -2; j < 1; j++) {
+            for (int k = -2; k < 1; k++) {
+                Eigen::Vector3i newPos = gridPos + Eigen::Vector3i(i, j, k);
+                if(inBounds(newPos)) {
+                    positions.push_back(newPos[0] + Ydim * (newPos[1] + Zdim * newPos[2]));
+                }
             }
         }
     }
@@ -94,12 +104,7 @@ void ParticleGrid::populateGrid() {
             // Update weight maps
             std::vector<int> ps = std::vector<int>();
             ps.push_back(particles[i].index);
-            if(!adjParticles.contains(c)) {
-                adjParticles.insert(c, ps);
-            }
-            else {
-                adjParticles.find(c).value().push_back(particles[i].index);
-            }
+            adjParticles.find(c).value().push_back(particles[i].index);
             particles[i].weights.insert(c, weight);
         }        
     }
@@ -120,11 +125,6 @@ void ParticleGrid::populateGrid() {
         }
     }
 
-    // Clear out particle velocities
-    for(int i = 0; i < numParticles; ++i) {
-        particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
-    }
-
     // Extra check for APIC Method
     for(int i = 0; i < numCells; ++i) {
         if(mass[i] == 0.f) {
@@ -137,7 +137,7 @@ void ParticleGrid::populateGrid() {
 void ParticleGrid::runGridUpdate() {
     // TODO
     for(int i = 0; i < numCells; ++i) {
-        velocity[i][1] -= 9.8 * deltaTime;
+        velocity[i][1] -= deltaTime * 0.005;
     }
 }
 

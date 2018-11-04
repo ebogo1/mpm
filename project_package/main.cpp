@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 //    std::cout << "Done writing obj" << std::endl;
 
     ParticleGrid PG = ParticleGrid();
-    for(int i = 0; i < 20; ++i) {
+    for(int i = 0; i < 25; ++i) {
         PG.runMPM();
         std::cout << "Wrote frame " << i << std::endl;
     }

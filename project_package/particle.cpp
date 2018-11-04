@@ -3,7 +3,7 @@
 Particle::Particle() {
     index = 0;
     weights = QMap<int, float>();
-    m = 0.f; // TODO: initialize mass
+    m = 1.f / 637.f; // TODO: initialize mass
     x = Eigen::Vector3f(0.f, 0.f, 0.f);
     v = Eigen::Vector3f(0.f, 0.f, 0.f);
     C << 0.f, 0.f, 0.f,

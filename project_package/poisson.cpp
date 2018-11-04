@@ -61,15 +61,15 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
     std::vector<int> activeSamples = std::vector<int>();
     int index = 0;
 
-    std::cout << "Begin initialization" << std::endl;
+    std::cout << "Begin poisson" << std::endl;
 
     Eigen::Vector3f point0 = randomPointInBound(0, 1, 0, 1, 0, 1);
     points.push_back(point0);
     activeSamples.push_back(index++);
 
     while(!activeSamples.empty()) {
-        std::cout << "Placing point " << index << std::endl;
-        std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
+        //std::cout << "Placing point " << index << std::endl;
+        //std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
         int randSample = (int)(randomFloat() * activeSamples.size());
         int currSample = activeSamples[randSample];
 

@@ -5,7 +5,6 @@ ParticleGrid::ParticleGrid() {
     // Initialize Particles
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.1, 20);
     for(int i = 0; i < positions.size(); ++i) {
-//        particles[i] = Particle(Eigen::Vector3f(positions[i]));
         Particle p = Particle();        
         p.x = Eigen::Vector3f(positions[i]);
         particles[i] = p;
@@ -35,7 +34,7 @@ Eigen::Vector3i ParticleGrid::getCellCoords(int c) {
 
 std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
     std::vector<int> positions;
-    Eigen::Vector3f gridPos = pPos / gridSize;
+    Eigen::Vector3f gridPos = pPos / gridSize + Eigen::Vector3f(1.f, 1.f, 1.f);
     for (int i = -1; i < 2; i++) {
         for (int j = -1; j < 2; j++) {
             for (int k = -1; k < 2; k++) {
@@ -177,7 +176,11 @@ void ParticleGrid::populateParticles() {
     // Compute new particle positions
     for(int i = 0; i < numParticles; ++i) {
         particles[i].x += deltaTime * particles[i].v;
-        particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
+        // Clamp to 9x9x9 grid
+        if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
+            particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
+            particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
+        }
     }
     // Write to .obj
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;

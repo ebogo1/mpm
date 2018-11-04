@@ -8,6 +8,7 @@ class Particle
 {
 public:
     Particle();
+    Particle(Eigen::Vector3f pos);
 
     // MPM attributes
     float m; // mass

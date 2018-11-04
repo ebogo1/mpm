@@ -2,6 +2,7 @@
 #define PARTICLEGRID_H
 
 #include <particle.h>
+#include <poisson.h>
 #include "Eigen/Eigen/StdVector"
 #include "Eigen/Eigen/Eigen"
 
@@ -10,27 +11,27 @@ class ParticleGrid
 public:
     ParticleGrid();
 
-    int numParticles; // # of particles in simulation
-    int numCells; // # of grid cells
+    const static int numParticles = 637; // # of particles in simulation
+    const static int numCells = 729; // # of grid cells, 9^3
 
-    float deltaTime; // Duration of one step
+    float deltaTime = 1.f / 9.f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
     int Xdim;
     int Ydim;
     int Zdim;
-    float mass[1];
-    Eigen::Vector3f velocity[1];
-    Eigen::Vector3f position[1];
-    float gridSize;
+    float mass[numCells];
+    Eigen::Vector3f velocity[numCells];
+    Eigen::Vector3f position[numCells];
+    float gridSize = 1.f / 9.f;
     // end of 3D grids
 
     // Maps each cell to weighted particles for G2P
     QMap<int, std::vector<Particle*>> adjParticles;
 
     // Contains all particles for MPM
-    Particle particles[1]; // TODO: update to proper size
+    Particle particles[numParticles]; // TODO: update to proper size
 
 
 

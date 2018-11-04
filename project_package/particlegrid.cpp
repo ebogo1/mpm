@@ -1,7 +1,11 @@
 #include "particlegrid.h"
 
-ParticleGrid::ParticleGrid() {
-    // TODO: Initialize member variables here
+ParticleGrid::ParticleGrid() {    
+    // Initialize Particles
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.1, 20);
+    for(int i = 0; i < positions.size(); ++i) {
+        particles[i] = Particle(Eigen::Vector3f(positions[i]));
+    }
 }
 
 Eigen::Vector3f ParticleGrid::getCellPos(int c) {

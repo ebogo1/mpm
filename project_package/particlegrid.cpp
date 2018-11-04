@@ -67,9 +67,12 @@ float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
 }
 
 void ParticleGrid::populateGrid() {
+    // Clear out data from previous iteration
     adjParticles = QMap<int, std::vector<int>>();
     for(int i = 0; i < numCells; i++) {
         adjParticles.insert(i, std::vector<int>());
+        velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
+        mass[i] = 0;
     }
 
     // First, compute total mass at each grid cell
@@ -161,6 +164,7 @@ void ParticleGrid::populateParticles() {
         for(int c : particles[i].weights.keys()) {
             Eigen::Vector3f x = getCellPos(c) - particles[i].x;
             B += particles[i].weights.find(c).value() * velocity[c] * x.transpose();
+            particles[i].v = particles[i].weights.find(c).value() * velocity[c];
         }
         float d = gridSize * gridSize / 3.f;
         Eigen::Matrix3f D = Eigen::Matrix3f();
@@ -168,6 +172,7 @@ void ParticleGrid::populateParticles() {
              0.f, d, 0.f,
              0.f, 0.f, d;
         particles[i].C = B * D.inverse();
+
     }
     // Compute new particle positions
     for(int i = 0; i < numParticles; ++i) {

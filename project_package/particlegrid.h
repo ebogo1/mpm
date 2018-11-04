@@ -18,7 +18,7 @@ public:
     int numParticles; // # of particles in simulation
     const static int numCells = 1331; // # of grid cells, 11^3
 
-    float deltaTime = 1.f / 9.f; // Duration of one step
+    float deltaTime = 0.1f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
@@ -26,8 +26,7 @@ public:
     int Ydim;
     int Zdim;
     float mass[numCells];
-    Eigen::Vector3f velocity[numCells];
-    Eigen::Vector3f position[numCells];
+    Eigen::Vector3f velocity[numCells];    
     float gridSize = 1.f / 9.f;
     // end of 3D grids
 

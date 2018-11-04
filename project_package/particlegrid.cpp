@@ -111,7 +111,12 @@ void ParticleGrid::populateGrid() {
             // APIC velocity summation
             //std::cout << particles[p].weights.keys().size() << std::endl;
             float w_ip = particles[p].weights.find(i).value();
-            velocity[i] += w_ip * particles[p].m * (particles[p].v + particles[p].C * (cellPos - particles[p].x)) / mass[i];
+            if(mass[i] == 0.f) {
+                velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
+            }
+            else {
+                velocity[i] += w_ip * particles[p].m * (particles[p].v + particles[p].C * (cellPos - particles[p].x)) / mass[i];
+            }
         }
     }
 

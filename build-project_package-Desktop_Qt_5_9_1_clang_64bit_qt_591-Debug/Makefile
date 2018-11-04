@@ -218,7 +218,6 @@ DIST          = /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		../project_package/.qmake.stash \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -425,7 +424,6 @@ Makefile: ../project_package/project_package.pro /Users/ebogo/Qt/5.9.1/clang_64/
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf \
-		.qmake.stash \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf \
@@ -611,7 +609,6 @@ Makefile: ../project_package/project_package.pro /Users/ebogo/Qt/5.9.1/clang_64/
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/qt_config.prf:
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/macx-clang/qmake.conf:
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/spec_post.prf:
-.qmake.stash:
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/exclusive_builds.prf:
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/mac/sdk.prf:
 /Users/ebogo/Qt/5.9.1/clang_64/mkspecs/features/toolchain.prf:
@@ -664,7 +661,6 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) $(TARGET) 
-	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -854,7 +850,148 @@ main.o: ../project_package/main.cpp /Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.fr
 		../project_package/Eigen/Eigen/StdVector \
 		../project_package/Eigen/Eigen/src/StlSupport/StdVector.h \
 		../project_package/Eigen/Eigen/src/StlSupport/details.h \
-		../project_package/poisson.h
+		../project_package/poisson.h \
+		../project_package/particlegrid.h \
+		../project_package/particle.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QMap \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qmap.h \
+		../project_package/Eigen/Eigen/Eigen \
+		../project_package/Eigen/Eigen/Dense \
+		../project_package/Eigen/Eigen/LU \
+		../project_package/Eigen/Eigen/src/misc/Kernel.h \
+		../project_package/Eigen/Eigen/src/misc/Image.h \
+		../project_package/Eigen/Eigen/src/LU/FullPivLU.h \
+		../project_package/Eigen/Eigen/src/LU/PartialPivLU.h \
+		../project_package/Eigen/Eigen/src/misc/lapacke.h \
+		../project_package/Eigen/Eigen/src/misc/lapacke_mangling.h \
+		../project_package/Eigen/Eigen/src/LU/PartialPivLU_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/LU/Determinant.h \
+		../project_package/Eigen/Eigen/src/LU/InverseImpl.h \
+		../project_package/Eigen/Eigen/src/LU/arch/Inverse_SSE.h \
+		../project_package/Eigen/Eigen/Cholesky \
+		../project_package/Eigen/Eigen/Jacobi \
+		../project_package/Eigen/Eigen/src/Jacobi/Jacobi.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LLT.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LDLT.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LLT_LAPACKE.h \
+		../project_package/Eigen/Eigen/QR \
+		../project_package/Eigen/Eigen/Householder \
+		../project_package/Eigen/Eigen/src/Householder/Householder.h \
+		../project_package/Eigen/Eigen/src/Householder/HouseholderSequence.h \
+		../project_package/Eigen/Eigen/src/Householder/BlockHouseholder.h \
+		../project_package/Eigen/Eigen/src/QR/HouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/FullPivHouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/ColPivHouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/CompleteOrthogonalDecomposition.h \
+		../project_package/Eigen/Eigen/src/QR/HouseholderQR_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/QR/ColPivHouseholderQR_LAPACKE.h \
+		../project_package/Eigen/Eigen/SVD \
+		../project_package/Eigen/Eigen/src/misc/RealSvd2x2.h \
+		../project_package/Eigen/Eigen/src/SVD/UpperBidiagonalization.h \
+		../project_package/Eigen/Eigen/src/SVD/SVDBase.h \
+		../project_package/Eigen/Eigen/src/SVD/JacobiSVD.h \
+		../project_package/Eigen/Eigen/src/SVD/BDCSVD.h \
+		../project_package/Eigen/Eigen/src/SVD/JacobiSVD_LAPACKE.h \
+		../project_package/Eigen/Eigen/Geometry \
+		../project_package/Eigen/Eigen/src/Geometry/OrthoMethods.h \
+		../project_package/Eigen/Eigen/src/Geometry/EulerAngles.h \
+		../project_package/Eigen/Eigen/src/Geometry/Homogeneous.h \
+		../project_package/Eigen/Eigen/src/Geometry/RotationBase.h \
+		../project_package/Eigen/Eigen/src/Geometry/Rotation2D.h \
+		../project_package/Eigen/Eigen/src/Geometry/Quaternion.h \
+		../project_package/Eigen/Eigen/src/Geometry/AngleAxis.h \
+		../project_package/Eigen/Eigen/src/Geometry/Transform.h \
+		../project_package/Eigen/Eigen/src/Geometry/Translation.h \
+		../project_package/Eigen/Eigen/src/Geometry/Scaling.h \
+		../project_package/Eigen/Eigen/src/Geometry/Hyperplane.h \
+		../project_package/Eigen/Eigen/src/Geometry/ParametrizedLine.h \
+		../project_package/Eigen/Eigen/src/Geometry/AlignedBox.h \
+		../project_package/Eigen/Eigen/src/Geometry/Umeyama.h \
+		../project_package/Eigen/Eigen/src/Geometry/arch/Geometry_SSE.h \
+		../project_package/Eigen/Eigen/Eigenvalues \
+		../project_package/Eigen/Eigen/src/Eigenvalues/Tridiagonalization.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealSchur.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/EigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexSchur.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealQZ.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealSchur_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexSchur_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/SelfAdjointEigenSolver_LAPACKE.h \
+		../project_package/Eigen/Eigen/Sparse \
+		../project_package/Eigen/Eigen/SparseCore \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseUtil.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMatrixBase.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseAssign.h \
+		../project_package/Eigen/Eigen/src/SparseCore/CompressedStorage.h \
+		../project_package/Eigen/Eigen/src/SparseCore/AmbiVector.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCompressedBase.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMap.h \
+		../project_package/Eigen/Eigen/src/SparseCore/MappedSparseMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseVector.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseRef.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCwiseUnaryOp.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCwiseBinaryOp.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseTranspose.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseBlock.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDot.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseRedux.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDiagonalProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/ConservativeSparseSparseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSparseProductWithPruning.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDenseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSelfAdjointView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseTriangularView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/TriangularSolver.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparsePermutation.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseFuzzy.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSolverBase.h \
+		../project_package/Eigen/Eigen/OrderingMethods \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Amd.h \
+		../project_package/Eigen/Eigen/src/Core/util/NonMPL2.h \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Ordering.h \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Eigen_Colamd.h \
+		../project_package/Eigen/Eigen/SparseCholesky \
+		../project_package/Eigen/Eigen/src/SparseCholesky/SimplicialCholesky.h \
+		../project_package/Eigen/Eigen/src/SparseCholesky/SimplicialCholesky_impl.h \
+		../project_package/Eigen/Eigen/SparseLU \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_gemm_kernel.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Structs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_SupernodalMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLUImpl.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseColEtree.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Memory.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_heap_relax_snode.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_relax_snode.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_pivotL.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_panel_dfs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_kernel_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_panel_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_column_dfs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_column_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_copy_to_ucol.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_pruneL.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Utils.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU.h \
+		../project_package/Eigen/Eigen/SparseQR \
+		../project_package/Eigen/Eigen/src/SparseQR/SparseQR.h \
+		../project_package/Eigen/Eigen/IterativeLinearSolvers \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/SolveWithGuess.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IterativeSolverBase.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/BasicPreconditioners.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/ConjugateGradient.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/LeastSquareConjugateGradient.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../project_package/main.cpp
 
 particlewriter.o: ../project_package/particlewriter.cpp ../project_package/particlewriter.h \
@@ -1155,9 +1292,156 @@ particlegrid.o: ../project_package/particlegrid.cpp ../project_package/particleg
 		../project_package/Eigen/Eigen/src/Core/Assign_MKL.h \
 		../project_package/Eigen/Eigen/src/Core/GlobalFunctions.h \
 		../project_package/Eigen/Eigen/src/Core/util/ReenableStupidWarnings.h \
+		../project_package/poisson.h \
 		../project_package/Eigen/Eigen/StdVector \
 		../project_package/Eigen/Eigen/src/StlSupport/StdVector.h \
-		../project_package/Eigen/Eigen/src/StlSupport/details.h
+		../project_package/Eigen/Eigen/src/StlSupport/details.h \
+		../project_package/particlewriter.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QString \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qstring.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QFile \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qfile.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QCoreApplication \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qcoreapplication.h \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/ebogo/Qt/5.9.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		../project_package/Eigen/Eigen/Eigen \
+		../project_package/Eigen/Eigen/Dense \
+		../project_package/Eigen/Eigen/LU \
+		../project_package/Eigen/Eigen/src/misc/Kernel.h \
+		../project_package/Eigen/Eigen/src/misc/Image.h \
+		../project_package/Eigen/Eigen/src/LU/FullPivLU.h \
+		../project_package/Eigen/Eigen/src/LU/PartialPivLU.h \
+		../project_package/Eigen/Eigen/src/misc/lapacke.h \
+		../project_package/Eigen/Eigen/src/misc/lapacke_mangling.h \
+		../project_package/Eigen/Eigen/src/LU/PartialPivLU_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/LU/Determinant.h \
+		../project_package/Eigen/Eigen/src/LU/InverseImpl.h \
+		../project_package/Eigen/Eigen/src/LU/arch/Inverse_SSE.h \
+		../project_package/Eigen/Eigen/Cholesky \
+		../project_package/Eigen/Eigen/Jacobi \
+		../project_package/Eigen/Eigen/src/Jacobi/Jacobi.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LLT.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LDLT.h \
+		../project_package/Eigen/Eigen/src/Cholesky/LLT_LAPACKE.h \
+		../project_package/Eigen/Eigen/QR \
+		../project_package/Eigen/Eigen/Householder \
+		../project_package/Eigen/Eigen/src/Householder/Householder.h \
+		../project_package/Eigen/Eigen/src/Householder/HouseholderSequence.h \
+		../project_package/Eigen/Eigen/src/Householder/BlockHouseholder.h \
+		../project_package/Eigen/Eigen/src/QR/HouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/FullPivHouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/ColPivHouseholderQR.h \
+		../project_package/Eigen/Eigen/src/QR/CompleteOrthogonalDecomposition.h \
+		../project_package/Eigen/Eigen/src/QR/HouseholderQR_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/QR/ColPivHouseholderQR_LAPACKE.h \
+		../project_package/Eigen/Eigen/SVD \
+		../project_package/Eigen/Eigen/src/misc/RealSvd2x2.h \
+		../project_package/Eigen/Eigen/src/SVD/UpperBidiagonalization.h \
+		../project_package/Eigen/Eigen/src/SVD/SVDBase.h \
+		../project_package/Eigen/Eigen/src/SVD/JacobiSVD.h \
+		../project_package/Eigen/Eigen/src/SVD/BDCSVD.h \
+		../project_package/Eigen/Eigen/src/SVD/JacobiSVD_LAPACKE.h \
+		../project_package/Eigen/Eigen/Geometry \
+		../project_package/Eigen/Eigen/src/Geometry/OrthoMethods.h \
+		../project_package/Eigen/Eigen/src/Geometry/EulerAngles.h \
+		../project_package/Eigen/Eigen/src/Geometry/Homogeneous.h \
+		../project_package/Eigen/Eigen/src/Geometry/RotationBase.h \
+		../project_package/Eigen/Eigen/src/Geometry/Rotation2D.h \
+		../project_package/Eigen/Eigen/src/Geometry/Quaternion.h \
+		../project_package/Eigen/Eigen/src/Geometry/AngleAxis.h \
+		../project_package/Eigen/Eigen/src/Geometry/Transform.h \
+		../project_package/Eigen/Eigen/src/Geometry/Translation.h \
+		../project_package/Eigen/Eigen/src/Geometry/Scaling.h \
+		../project_package/Eigen/Eigen/src/Geometry/Hyperplane.h \
+		../project_package/Eigen/Eigen/src/Geometry/ParametrizedLine.h \
+		../project_package/Eigen/Eigen/src/Geometry/AlignedBox.h \
+		../project_package/Eigen/Eigen/src/Geometry/Umeyama.h \
+		../project_package/Eigen/Eigen/src/Geometry/arch/Geometry_SSE.h \
+		../project_package/Eigen/Eigen/Eigenvalues \
+		../project_package/Eigen/Eigen/src/Eigenvalues/Tridiagonalization.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealSchur.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/EigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexSchur.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealQZ.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/RealSchur_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/ComplexSchur_LAPACKE.h \
+		../project_package/Eigen/Eigen/src/Eigenvalues/SelfAdjointEigenSolver_LAPACKE.h \
+		../project_package/Eigen/Eigen/Sparse \
+		../project_package/Eigen/Eigen/SparseCore \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseUtil.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMatrixBase.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseAssign.h \
+		../project_package/Eigen/Eigen/src/SparseCore/CompressedStorage.h \
+		../project_package/Eigen/Eigen/src/SparseCore/AmbiVector.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCompressedBase.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseMap.h \
+		../project_package/Eigen/Eigen/src/SparseCore/MappedSparseMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseVector.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseRef.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCwiseUnaryOp.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseCwiseBinaryOp.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseTranspose.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseBlock.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDot.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseRedux.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDiagonalProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/ConservativeSparseSparseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSparseProductWithPruning.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseDenseProduct.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSelfAdjointView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseTriangularView.h \
+		../project_package/Eigen/Eigen/src/SparseCore/TriangularSolver.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparsePermutation.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseFuzzy.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseSolverBase.h \
+		../project_package/Eigen/Eigen/OrderingMethods \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Amd.h \
+		../project_package/Eigen/Eigen/src/Core/util/NonMPL2.h \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Ordering.h \
+		../project_package/Eigen/Eigen/src/OrderingMethods/Eigen_Colamd.h \
+		../project_package/Eigen/Eigen/SparseCholesky \
+		../project_package/Eigen/Eigen/src/SparseCholesky/SimplicialCholesky.h \
+		../project_package/Eigen/Eigen/src/SparseCholesky/SimplicialCholesky_impl.h \
+		../project_package/Eigen/Eigen/SparseLU \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_gemm_kernel.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Structs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_SupernodalMatrix.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLUImpl.h \
+		../project_package/Eigen/Eigen/src/SparseCore/SparseColEtree.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Memory.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_heap_relax_snode.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_relax_snode.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_pivotL.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_panel_dfs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_kernel_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_panel_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_column_dfs.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_column_bmod.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_copy_to_ucol.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_pruneL.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU_Utils.h \
+		../project_package/Eigen/Eigen/src/SparseLU/SparseLU.h \
+		../project_package/Eigen/Eigen/SparseQR \
+		../project_package/Eigen/Eigen/src/SparseQR/SparseQR.h \
+		../project_package/Eigen/Eigen/IterativeLinearSolvers \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/SolveWithGuess.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IterativeSolverBase.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/BasicPreconditioners.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/ConjugateGradient.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/LeastSquareConjugateGradient.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h \
+		../project_package/Eigen/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o particlegrid.o ../project_package/particlegrid.cpp
 
 particle.o: ../project_package/particle.cpp ../project_package/particle.h \

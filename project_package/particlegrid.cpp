@@ -6,11 +6,10 @@ ParticleGrid::ParticleGrid() {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.1, 20);
     for(int i = 0; i < positions.size(); ++i) {
 //        particles[i] = Particle(Eigen::Vector3f(positions[i]));
-        Particle p = Particle();
-        p.weights.contains(3);
+        Particle p = Particle();        
         p.x = Eigen::Vector3f(positions[i]);
         particles[i] = p;
-        p.index = i;
+        particles[i].index = i;
     }
     numParticles = positions.size();
     writer = ParticleWriter();
@@ -68,11 +67,14 @@ float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
 }
 
 void ParticleGrid::populateGrid() {
-    adjParticles.clear();
+    adjParticles = QMap<int, std::vector<int>>();
+    for(int i = 0; i < numCells; i++) {
+        adjParticles.insert(i, std::vector<int>());
+    }
 
     // First, compute total mass at each grid cell
-    for(Particle p : particles) {
-        std::vector<int> gridCells = getNeighbors(p.x);
+    for(int i = 0; i < numParticles; ++i) {
+        std::vector<int> gridCells = getNeighbors(particles[i].x);
 
         // For each relevant grid cell
         for(int c : gridCells) {            
@@ -82,23 +84,21 @@ void ParticleGrid::populateGrid() {
             int y = temp / Xdim;
             int x = temp % Xdim;
 
-            float weight = computeWeight(p.x, x, y, z);
+            float weight = computeWeight(particles[i].x, x, y, z);
             // Mass summation
-            mass[c] += p.m * weight;
+            mass[c] += particles[i].m * weight;
 
             // Update weight maps
-            std::vector<int> particles = std::vector<int>();
-            particles.push_back(p.index);
+            std::vector<int> ps = std::vector<int>();
+            ps.push_back(particles[i].index);
             if(!adjParticles.contains(c)) {
-                adjParticles.insert(c, particles);
+                adjParticles.insert(c, ps);
             }
             else {
-                particles = adjParticles.find(c).value();
-                particles.push_back(p.index);
-                adjParticles.insert(c, particles);
+                adjParticles.find(c).value().push_back(particles[i].index);
             }
-            p.weights.insert(c, weight);
-        }
+            particles[i].weights.insert(c, weight);
+        }        
     }
 
     // Then compute APIC velocity using total mass
@@ -106,21 +106,15 @@ void ParticleGrid::populateGrid() {
         for(int p : adjParticles.find(i).value()) {
             Eigen::Vector3f cellPos = getCellPos(i);
             // APIC velocity summation
-            std::cout << particles[p].weights.keys().size() << std::endl;
-            if(particles[p].weights.contains(i)) {
-                std::cout << "has" << std::endl;
-            }
-            else {
-                std::cout << "doesn't have" << std::endl;
-            }
+            //std::cout << particles[p].weights.keys().size() << std::endl;
             float w_ip = particles[p].weights.find(i).value();
             velocity[i] += w_ip * particles[p].m * (particles[p].v + particles[p].C * (cellPos - particles[p].x)) / mass[i];
         }
     }
 
     // Clear out particle velocities
-    for(Particle p : particles) {
-        p.v = Eigen::Vector3f(0.f, 0.f, 0.f);
+    for(int i = 0; i < numParticles; ++i) {
+        particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
     }
 
     // Extra check for APIC Method
@@ -159,33 +153,33 @@ void ParticleGrid::populateParticles() {
         }
     }
     // Compute new Affine velocity matrix
-    for(Particle p : particles) {
+    for(int i = 0; i < numParticles; ++i) {
         Eigen::Matrix3f B = Eigen::Matrix3f();
         B << 0.f, 0.f, 0.f,
              0.f, 0.f, 0.f,
              0.f, 0.f, 0.f;
-        for(int c : p.weights.keys()) {
-            Eigen::Vector3f x = getCellPos(c) - p.x;
-            B += p.weights.find(c).value() * velocity[c] * x.transpose();
+        for(int c : particles[i].weights.keys()) {
+            Eigen::Vector3f x = getCellPos(c) - particles[i].x;
+            B += particles[i].weights.find(c).value() * velocity[c] * x.transpose();
         }
         float d = gridSize * gridSize / 3.f;
         Eigen::Matrix3f D = Eigen::Matrix3f();
         D << d, 0.f, 0.f,
              0.f, d, 0.f,
              0.f, 0.f, d;
-        p.C = B * D.inverse();
+        particles[i].C = B * D.inverse();
     }
     // Compute new particle positions
-    for(Particle p : particles) {
-        p.x += deltaTime * p.v;
-        p.x = Clamp(p.x, 0.f, 1.f);
+    for(int i = 0; i < numParticles; ++i) {
+        particles[i].x += deltaTime * particles[i].v;
+        particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
     }
     // Write to .obj
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;
     for(int i = 0; i < numParticles; ++i) {
         ps.push_back(particles[i].x);
     }
-    QString name = QString("frame" + iter);
+    QString name = QString("frame" + QString::number(iter));
     writer.writeObjs(ps, name);
     iter++;
 }

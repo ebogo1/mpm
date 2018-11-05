@@ -68,11 +68,31 @@ float computeWeightComponent(float x) {
     }
 }
 
-float ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
+Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
     float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - x * gridSize));
     float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - y * gridSize));
     float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - z * gridSize));
-    return Nx * Ny * Nz;
+    return Eigen::Vector3f(Nx, Ny, Nz);
+}
+
+float computeWeightGradientComponent(float x) {
+    if (std::abs(x) >= 0 && std::abs(x) < 1) {
+        return 1.5 * std::pow(std::abs(x), 2.0) - 2.0 * x;
+    }
+    else if (std::abs(x) >= 1 && std::abs(x) < 2) {
+        return -(1.0/6.0) * 3.0 * std::pow(std::abs(x), 2.0) + 2.0 * x - 2.0;
+    }
+    else {
+        return 0;
+    }
+}
+
+Eigen::Vector3f ParticleGrid::computeWeightGradient(Eigen::Vector3f pPos, int c) {
+    Eigen::Vector3i indices = getCellCoords(c);
+    float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - indices[0] * gridSize));
+    float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - indices[1] * gridSize));
+    float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - indices[2] * gridSize));
+    return Eigen::Vector3f(Nx, Ny, Nz);
 }
 
 void ParticleGrid::populateGrid() {
@@ -97,7 +117,7 @@ void ParticleGrid::populateGrid() {
             int y = temp / Xdim;
             int x = temp % Xdim;
 
-            float weight = computeWeight(particles[i].x, x, y, z);
+            float weight = computeWeight(particles[i].x, x, y, z).norm();
             // Mass summation
             mass[c] += particles[i].m * weight;
 
@@ -180,6 +200,19 @@ void ParticleGrid::populateParticles() {
     }
     // Compute new particle positions
     for(int i = 0; i < numParticles; ++i) {
+
+        Eigen::Matrix3f sum = Eigen::Matrix3f();
+        sum << 1.f, 0.f, 0.f,
+                0.f, 1.f, 0.f,
+                0.f, 0.f, 1.f;
+        std::vector<int> gridCells = getNeighbors(particles[i].x);
+
+        // For each relevant grid cell
+        for(int c : gridCells) {
+            sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
+        }
+        particles[i].F = sum * particles[i].F;
+
         particles[i].x += deltaTime * particles[i].v;
         // Clamp to 9x9x9 grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {

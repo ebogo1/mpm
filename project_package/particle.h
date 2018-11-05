@@ -23,6 +23,9 @@ public:
     // Maps a grid cell to corresponding weight
     QMap<int, float> weights;
 
+    // Deformation gradient
+    Eigen::Matrix3f F;
+
 };
 
 #endif // PARTICLE_H

@@ -9,6 +9,7 @@ Particle::Particle() {
     C << 0.f, 0.f, 0.f,
          0.f, 0.f, 0.f,
          0.f, 0.f, 0.f;
+    F = Eigen::Matrix3f();
 }
 
 Particle::Particle(Eigen::Vector3f pos) {
@@ -20,4 +21,5 @@ Particle::Particle(Eigen::Vector3f pos) {
     C << 0.f, 0.f, 0.f,
          0.f, 0.f, 0.f,
          0.f, 0.f, 0.f;
+    F = Eigen::Matrix3f();
 }

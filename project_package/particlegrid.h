@@ -47,7 +47,10 @@ public:
     std::vector<int> getNeighbors(Eigen::Vector3f pPos);
 
     // Returns w_ip of particle with position pPos to grid[x][y][z]
-    float computeWeight(Eigen::Vector3f pPos, int x, int y, int z);
+    Eigen::Vector3f computeWeight(Eigen::Vector3f pPos, int x, int y, int z);
+
+    // Returns gradient of w_ip of particle with position pPos to grid[x][y][z]
+    Eigen::Vector3f computeWeightGradient(Eigen::Vector3f pPos, int c);
 
     // Sets appropriate weighted values for each cell (P2G)
     void populateGrid();

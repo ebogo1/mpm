@@ -14,6 +14,7 @@ public:
 
     // MPM attributes
     float m; // mass
+    float V; // volume
     Eigen::Vector3f x; // position
     Eigen::Vector3f v; // velocity
 

@@ -1,11 +1,11 @@
 #include "particlegrid.h"
 
 #include "iostream"
-ParticleGrid::ParticleGrid() {    
+ParticleGrid::ParticleGrid() {
     // Initialize Particles
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.1, 20);
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle();        
+        Particle p = Particle();
         p.x = Eigen::Vector3f(positions[i]);
         particles[i] = p;
         particles[i].index = i;
@@ -76,11 +76,15 @@ Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, 
 }
 
 float computeWeightGradientComponent(float x) {
-    if (std::abs(x) >= 0 && std::abs(x) < 1) {
-        return 1.5 * std::pow(std::abs(x), 2.0) - 2.0 * x;
+    // For some reason this is the only way that checking |x|>0 worked, please don't eat me
+    if(x > -0.0001 && x < 0.0001) {
+        return 0.f;
+    }
+    if (std::abs(x) > 0 && std::abs(x) < 1) {
+        return 3*x*x*x*0.5/std::abs(x) - 2*x;
     }
     else if (std::abs(x) >= 1 && std::abs(x) < 2) {
-        return -(1.0/6.0) * 3.0 * std::pow(std::abs(x), 2.0) + 2.0 * x - 2.0;
+        return x*x*x*-0.5/std::abs(x) + 2*x - 2*x/std::abs(x);
     }
     else {
         return 0;
@@ -88,11 +92,19 @@ float computeWeightGradientComponent(float x) {
 }
 
 Eigen::Vector3f ParticleGrid::computeWeightGradient(Eigen::Vector3f pPos, int c) {
-    Eigen::Vector3i indices = getCellCoords(c);
-    float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - indices[0] * gridSize));
-    float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - indices[1] * gridSize));
-    float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - indices[2] * gridSize));
-    return Eigen::Vector3f(Nx, Ny, Nz);
+    Eigen::Vector3f cellPos = getCellPos(c);
+    float x = 1.0/gridSize * (pPos[0] - cellPos[0]);
+    float y = 1.0/gridSize * (pPos[1] - cellPos[1]);
+    float z = 1.0/gridSize * (pPos[2] - cellPos[2]);
+    // N components
+    float Nx = computeWeightComponent(x);
+    float Ny = computeWeightComponent(y);
+    float Nz = computeWeightComponent(z);
+    // N' components
+    float Nxp = computeWeightGradientComponent(x);
+    float Nyp = computeWeightGradientComponent(y);
+    float Nzp = computeWeightGradientComponent(z);
+    return 1.f / gridSize * Eigen::Vector3f(Nxp*Ny*Nz, Nx*Nyp*Nz, Nx*Ny*Nzp);
 }
 
 void ParticleGrid::populateGrid() {
@@ -101,7 +113,8 @@ void ParticleGrid::populateGrid() {
     for(int i = 0; i < numCells; i++) {
         adjParticles.insert(i, std::vector<int>());
         velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
-        mass[i] = 0;
+        mass[i] = 0.f;
+        force[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
     }
 
     // First, compute total mass at each grid cell
@@ -110,7 +123,7 @@ void ParticleGrid::populateGrid() {
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
         // For each relevant grid cell
-        for(int c : gridCells) {            
+        for(int c : gridCells) {
             // Sum particle attributes times weights into grid cells
             int z = c / (Xdim * Ydim);
             int temp = c - (z * Xdim * Ydim);
@@ -120,14 +133,16 @@ void ParticleGrid::populateGrid() {
             float weight = computeWeight(particles[i].x, x, y, z).norm();
             // Mass summation
             mass[c] += particles[i].m * weight;
+            //velocity[c] += particles[i].v * weight;
 
             // Update weight maps
             std::vector<int> ps = std::vector<int>();
             ps.push_back(particles[i].index);
             adjParticles.find(c).value().push_back(particles[i].index);
             particles[i].weights.insert(c, weight);
-        }        
+        }
     }
+
 
     // Then compute APIC velocity using total mass
     for(int i = 0; i < numCells; i++) {
@@ -151,23 +166,41 @@ void ParticleGrid::populateGrid() {
             velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
         }
     }
-
 }
 
 void ParticleGrid::runGridUpdate() {
     // TODO
+    // Water forces
     for(int i = 0; i < numCells; ++i) {
-        velocity[i][1] -= deltaTime * 0.005;
+        for(int p : adjParticles.find(i).value()) {
+            Eigen::Matrix3f F = particles[p].F;
+            float J = F.determinant();
+            float k = 20.f;
+            float gamma = 9.8f;
+            if(std::abs(J) > 0.f) {
+                float pressure = k * (1.f / std::pow(J, gamma) - 1.f);
+                Eigen::Matrix3f stress = -pressure * Eigen::Matrix3f::Identity();
+                force[i] -= particles[p].V * stress * computeWeightGradient(particles[p].x, i);
+            }
+        }
+        if(mass[i] > 0.f) {
+            //force[i][1] -= mass[i] * 3.5; // gravity
+            //velocity[i] += deltaTime * force[i] / mass[i];
+            velocity[i][1] -= deltaTime * 2.5;
+        }
     }
+
+    // TODO
+        for(int i = 0; i < numCells; ++i) {
+            velocity[i][1] -= deltaTime * 0.005;
+        }
 }
 
 // Helper function to clamp Vector3fs
 Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
     Eigen::Vector3f ans;
     for(int i = 0; i < 2; ++i) {
-        ans[0] = std::max(std::min(v[0], max), min);
-        ans[1] = std::max(std::min(v[1], max), min);
-        ans[2] = std::max(std::min(v[2], max), min);
+        ans[i] = std::max(std::min(v[i], max), min);
     }
     return ans;
 }
@@ -196,9 +229,8 @@ void ParticleGrid::populateParticles() {
              0.f, d, 0.f,
              0.f, 0.f, d;
         particles[i].C = B * D.inverse();
-
     }
-    // Compute new particle positions
+    //Compute new particle positions
     for(int i = 0; i < numParticles; ++i) {
 
         Eigen::Matrix3f sum = Eigen::Matrix3f();
@@ -213,6 +245,7 @@ void ParticleGrid::populateParticles() {
         }
         particles[i].F = sum * particles[i].F;
 
+        // Update position
         particles[i].x += deltaTime * particles[i].v;
         // Clamp to 9x9x9 grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
@@ -229,3 +262,4 @@ void ParticleGrid::populateParticles() {
     writer.writeObjs(ps, name);
     iter++;
 }
+

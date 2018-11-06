@@ -26,7 +26,8 @@ public:
     int Ydim;
     int Zdim;
     float mass[numCells];
-    Eigen::Vector3f velocity[numCells];    
+    Eigen::Vector3f velocity[numCells];
+    Eigen::Vector3f force[numCells];
     float gridSize = 1.f / 9.f;
     // end of 3D grids
 
@@ -34,7 +35,7 @@ public:
     QMap<int, std::vector<int>> adjParticles;
 
     // Contains all particles for MPM
-    Particle particles[1000]; // TODO: update to proper size
+    Particle particles[10000]; // TODO: update to proper size
 
 
 

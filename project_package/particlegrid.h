@@ -16,26 +16,27 @@ public:
     ParticleWriter writer;
 
     int numParticles; // # of particles in simulation
-    const static int numCells = 1331; // # of grid cells, 11^3
 
     float deltaTime = 0.05f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
+    const static int gridDims = 20;  // Specify number of non-border grid cells along an axis
+    const static int numCells = std::pow(gridDims + 2, 3); // # of grid cells, (gridDims + 2)^3
+    float gridSize;
     int Xdim;
     int Ydim;
     int Zdim;
     float mass[numCells];
     Eigen::Vector3f velocity[numCells];
     Eigen::Vector3f force[numCells];
-    float gridSize = 1.f / 9.f;
     // end of 3D grids
 
     // Maps each cell to weighted particles for G2P
     QMap<int, std::vector<int>> adjParticles;
 
     // Contains all particles for MPM
-    Particle particles[10000]; // TODO: update to proper size
+    std::vector<Particle> particles;
 
 
 

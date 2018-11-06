@@ -15,10 +15,10 @@ Particle::Particle() {
          0.f, 0.f, 1.f;
 }
 
-Particle::Particle(Eigen::Vector3f pos) {
-    index = 0;
+Particle::Particle(Eigen::Vector3f pos, int index, float mass) {
+    this->index = index;
+    this->m = mass;
     weights = QMap<int, float>();
-    m = 1.f; // TODO: initialize mass
     V = 0.0014;
     x = pos;
     v = Eigen::Vector3f(0.f, 0.f, 0.f);

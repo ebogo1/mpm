@@ -24,7 +24,7 @@ Eigen::Vector3f ParticleGrid::getCellPos(int c) {
     return gridSize * Eigen::Vector3f(x, y, z) - Eigen::Vector3f(gridSize, gridSize, gridSize);
 }
 
-Eigen::Vector3i ParticleGrid::getCellCoords(int c) {
+Eigen::Vector3i ParticleGrid::getCellIndices(int c) {
     int z = c / (Xdim * Ydim);
     int temp = c - (z * Xdim * Ydim);
     int y = temp / Xdim;
@@ -40,9 +40,9 @@ bool inBounds(Eigen::Vector3i v) {
 
 std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
     std::vector<int> positions;
-    Eigen::Vector3f sp = pPos / gridSize;
-    Eigen::Vector3i gridPos = Eigen::Vector3i(std::floor(sp[0]), std::floor(sp[1]), std::floor(sp[2]));
-    gridPos += Eigen::Vector3i(1, 1, 1);
+    Eigen::Vector3f temp = pPos / gridSize;
+    Eigen::Vector3i gridPos = Eigen::Vector3i(std::floor(temp[0]), std::floor(temp[1]), std::floor(temp[2]));
+    gridPos += Eigen::Vector3i(1, 1, 1); // Account for shifted 11^3 grid
     for (int i = -2; i < 1; i++) {
         for (int j = -2; j < 1; j++) {
             for (int k = -2; k < 1; k++) {
@@ -69,9 +69,10 @@ float computeWeightComponent(float x) {
 }
 
 Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
-    float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - x * gridSize));
-    float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - y * gridSize));
-    float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - z * gridSize));
+    // x-1, y-1, z-1 required in order to account for shifted 11^3 grid
+    float Nx = computeWeightComponent(1.0/gridSize * (pPos[0] - (x-1) * gridSize));
+    float Ny = computeWeightComponent(1.0/gridSize * (pPos[1] - (y-1) * gridSize));
+    float Nz = computeWeightComponent(1.0/gridSize * (pPos[2] - (z-1) * gridSize));
     return Eigen::Vector3f(Nx, Ny, Nz);
 }
 
@@ -87,7 +88,7 @@ float computeWeightGradientComponent(float x) {
         return x*x*x*-0.5/std::abs(x) + 2*x - 2*x/std::abs(x);
     }
     else {
-        return 0;
+        return 0.f;
     }
 }
 
@@ -117,20 +118,18 @@ void ParticleGrid::populateGrid() {
         force[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
     }
 
-    // First, compute total mass at each grid cell
+    // Compute particle weights and transfer mass to grid
     for(int i = 0; i < numParticles; ++i) {
         particles[i].weights.clear();
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
-        // For each relevant grid cell
         for(int c : gridCells) {
-            // Sum particle attributes times weights into grid cells
-            int z = c / (Xdim * Ydim);
-            int temp = c - (z * Xdim * Ydim);
-            int y = temp / Xdim;
-            int x = temp % Xdim;
+            Eigen::Vector3i indices = getCellIndices(c);
+            int x = indices[0], y = indices[1], z = indices[2];
 
-            float weight = computeWeight(particles[i].x, x, y, z).norm();
+            Eigen::Vector3f wVec = computeWeight(particles[i].x, x, y, z);
+            float weight = wVec[0] * wVec[1] * wVec[2];
+
             // Mass summation
             mass[c] += particles[i].m * weight;
             //velocity[c] += particles[i].v * weight;
@@ -143,13 +142,10 @@ void ParticleGrid::populateGrid() {
         }
     }
 
-
-    // Then compute APIC velocity using total mass
+    // APIC velocity transfser to grid
     for(int i = 0; i < numCells; i++) {
         for(int p : adjParticles.find(i).value()) {
             Eigen::Vector3f cellPos = getCellPos(i);
-            // APIC velocity summation
-            //std::cout << particles[p].weights.keys().size() << std::endl;
             float w_ip = particles[p].weights.find(i).value();
             if(mass[i] == 0.f) {
                 velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
@@ -169,9 +165,8 @@ void ParticleGrid::populateGrid() {
 }
 
 void ParticleGrid::runGridUpdate() {
-    // TODO
-    // Water forces
     for(int i = 0; i < numCells; ++i) {
+        // Water pressure force
         for(int p : adjParticles.find(i).value()) {
             Eigen::Matrix3f F = particles[p].F;
             float J = F.determinant();
@@ -183,20 +178,16 @@ void ParticleGrid::runGridUpdate() {
                 force[i] -= particles[p].V * stress * computeWeightGradient(particles[p].x, i);
             }
         }
+        // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            //force[i][1] -= mass[i] * 3.5; // gravity
-            //velocity[i] += deltaTime * force[i] / mass[i];
-            velocity[i][1] -= deltaTime * 2.5;
+            force[i][1] -= mass[i] * 3.5; // gravity
+            velocity[i] += deltaTime * force[i] / mass[i];
+            //velocity[i][1] -= deltaTime * 0.005;
         }
     }
-
-    // TODO
-        for(int i = 0; i < numCells; ++i) {
-            velocity[i][1] -= deltaTime * 0.005;
-        }
 }
 
-// Helper function to clamp Vector3fs
+// Helper function to clamp Vector3f's
 Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
     Eigen::Vector3f ans;
     for(int i = 0; i < 2; ++i) {
@@ -206,47 +197,36 @@ Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
 }
 
 void ParticleGrid::populateParticles() {
-    // Compute new particle velocities
+    // Update particle velocities
     for(int i = 0; i < numCells; ++i) {
         for(int p : adjParticles.find(i).value()) {
             float w_ip = particles[p].weights.find(i).value();
             particles[p].v += w_ip * particles[p].m * velocity[i];
         }
     }
-    // Compute new Affine velocity matrix
+    // Update particle Affine velocity matrices
     for(int i = 0; i < numParticles; ++i) {
-        Eigen::Matrix3f B = Eigen::Matrix3f();
-        B << 0.f, 0.f, 0.f,
-             0.f, 0.f, 0.f,
-             0.f, 0.f, 0.f;
+        Eigen::Matrix3f B = Eigen::Matrix3f::Zero();
         for(int c : particles[i].weights.keys()) {
             Eigen::Vector3f x = getCellPos(c) - particles[i].x;
             B += particles[i].weights.find(c).value() * velocity[c] * x.transpose();
         }
         float d = gridSize * gridSize / 3.f;
-        Eigen::Matrix3f D = Eigen::Matrix3f();
-        D << d, 0.f, 0.f,
-             0.f, d, 0.f,
-             0.f, 0.f, d;
+        Eigen::Matrix3f D = d * Eigen::Matrix3f::Identity();
         particles[i].C = B * D.inverse();
     }
-    //Compute new particle positions
+    // Update particle deformation gradients and positions
     for(int i = 0; i < numParticles; ++i) {
-
-        Eigen::Matrix3f sum = Eigen::Matrix3f();
-        sum << 1.f, 0.f, 0.f,
-                0.f, 1.f, 0.f,
-                0.f, 0.f, 1.f;
+        Eigen::Matrix3f sum = Eigen::Matrix3f::Identity();
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
-        // For each relevant grid cell
         for(int c : gridCells) {
             sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
         }
-        particles[i].F = sum * particles[i].F;
 
-        // Update position
+        particles[i].F = sum * particles[i].F;
         particles[i].x += deltaTime * particles[i].v;
+
         // Clamp to 9x9x9 grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);

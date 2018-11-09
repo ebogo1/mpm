@@ -41,8 +41,8 @@ public:
 
     // Returns worldspace position of cell c
     Eigen::Vector3f getCellPos(int c);
-    // Return gridspace coords of cell c
-    Eigen::Vector3i getCellCoords(int c);
+    // Return gridspace indices of cell c
+    Eigen::Vector3i getCellIndices(int c);
 
     // Returns a vector of [x][y][z] indices for all cells affected by a particle
     std::vector<int> getNeighbors(Eigen::Vector3f pPos);

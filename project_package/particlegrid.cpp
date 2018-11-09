@@ -224,7 +224,7 @@ void ParticleGrid::populateParticles() {
             sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
         }
 
-        particles[i].F = sum * particles[i].F;
+        particles[i].F *= sum * particles[i].F;
         particles[i].x += deltaTime * particles[i].v;
 
         // Clamp to 9x9x9 grid

@@ -49,7 +49,7 @@ static bool pointIsFarFromOthers(Eigen::Vector3f point, std::vector<Eigen::Vecto
 
 std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson::initialize(float r, int k) {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> points = std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>>();
-    /*int bgGridDim = 1.0/r;
+    int bgGridDim = 1.0/r;
     int bgGrid[bgGridDim][bgGridDim][bgGridDim];
     for (int i = 0; i < bgGridDim; i++) {
         for (int j = 0; j < bgGridDim; j++) {
@@ -57,7 +57,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
                 bgGrid[i][j][l] = -1;
             }
         }
-    }*/
+    }
     std::vector<int> activeSamples = std::vector<int>();
     int index = 0;
 
@@ -79,6 +79,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
             if (isPointInBounds(point, 0, 1, 0, 1, 0, 1) && pointIsFarFromOthers(point, points, r)) {
                 points.push_back(point);
                 activeSamples.push_back(index++);
+
                 flag = true;
                 break;
             }

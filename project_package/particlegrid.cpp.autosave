@@ -226,12 +226,8 @@ void ParticleGrid::populateParticles() {
 
         particles[i].F *= sum * particles[i].F;
         particles[i].x += deltaTime * particles[i].v;
-<<<<<<< HEAD
-        // Clamp to gridDims x gridDims x gridDims grid
-=======
 
-        // Clamp to 9x9x9 grid
->>>>>>> 6ac5f215ffc271b8732421a6c9ed2cef6bad8e8a
+        // Clamp to gridDims x gridDims x gridDims grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
             particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);

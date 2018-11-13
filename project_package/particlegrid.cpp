@@ -4,7 +4,7 @@
 ParticleGrid::ParticleGrid() {
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.1, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.05, 20);
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
         Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0);
@@ -170,7 +170,7 @@ void ParticleGrid::runGridUpdate() {
         for(int p : adjParticles.find(i).value()) {
             Eigen::Matrix3f F = particles[p].F;
             float J = F.determinant();
-            float k = 20.f;
+            float k = 2.2f;
             float gamma = 9.8f;
             if(std::abs(J) > 0.f) {
                 float pressure = k * (1.f / std::pow(J, gamma) - 1.f);
@@ -180,7 +180,7 @@ void ParticleGrid::runGridUpdate() {
         }
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 3.5; // gravity
+            //force[i][1] -= mass[i] * 3.5; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
             //velocity[i][1] -= deltaTime * 0.005;
         }
@@ -226,12 +226,8 @@ void ParticleGrid::populateParticles() {
 
         particles[i].F *= sum * particles[i].F;
         particles[i].x += deltaTime * particles[i].v;
-<<<<<<< HEAD
-        // Clamp to gridDims x gridDims x gridDims grid
-=======
 
-        // Clamp to 9x9x9 grid
->>>>>>> 6ac5f215ffc271b8732421a6c9ed2cef6bad8e8a
+        // Clamp to gridDims x gridDims x gridDims grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
             particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);

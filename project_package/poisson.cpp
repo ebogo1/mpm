@@ -38,23 +38,33 @@ static float vectorLength(Eigen::Vector3f v) {
     return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 
-static bool pointIsFarFromOthers(Eigen::Vector3f point, std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> others, float r) {
-    for (int i = 0; i < others.size(); i++) {
-        Eigen::Vector3f p2 = others[i];
-        float dist = vectorLength(point - p2);
-        if (dist < r) return false;
+/*static bool pointIsFarFromOthers(Eigen::Vector3f point, std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> others, std::vector<int> bgGrid[][][], float r) {
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                int x = std::floor(point[0] + dx);
+                int y = std::floor(point[1] + dy);
+                int z = std::floor(point[2] + dz);
+                for (int i = 0; i < bgGrid[x][y][z].size(); i++) {
+                    int pointID = bgGrid[x][y][z].at(i);
+                    Eigen::Vector3f p2 = others[pointID];
+                    float dist = vectorLength(point - p2);
+                    if (dist < r) return false;
+                }
+                return true;
+            }
+        }
     }
-    return true;
-}
+}*/
 
 std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson::initialize(float r, int k) {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> points = std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>>();
     int bgGridDim = 1.0/r;
-    int bgGrid[bgGridDim][bgGridDim][bgGridDim];
+    std::vector<int> bgGrid[bgGridDim][bgGridDim][bgGridDim];
     for (int i = 0; i < bgGridDim; i++) {
         for (int j = 0; j < bgGridDim; j++) {
             for (int l = 0; l < bgGridDim; l++) {
-                bgGrid[i][j][l] = -1;
+                bgGrid[i][j][l] = std::vector<int>();
             }
         }
     }
@@ -65,20 +75,47 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
     Eigen::Vector3f point0 = randomPointInBound(0, 1, 0, 1, 0, 1);
     points.push_back(point0);
-    activeSamples.push_back(index++);
+    activeSamples.push_back(index);
+    bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);
 
     while(!activeSamples.empty()) {
-        //std::cout << "Placing point " << index << std::endl;
-        //std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
+        std::cout << "Placing point " << index << std::endl;
+        std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
         int randSample = (int)(randomFloat() * activeSamples.size());
         int currSample = activeSamples[randSample];
 
         bool flag = false;
         for (int attempts = 0; attempts < k; attempts++) {
             Eigen::Vector3f point = randomPointAroundPoint(points[currSample], r);
-            if (isPointInBounds(point, 0, 1, 0, 1, 0, 1) && pointIsFarFromOthers(point, points, r)) {
+
+            bool farFromOthers = true;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        int x = std::floor(point[0] + dx);
+                        int y = std::floor(point[1] + dy);
+                        int z = std::floor(point[2] + dz);
+                        if (x < 0 || x >= bgGridDim) continue;
+                        if (y < 0 || y >= bgGridDim) continue;
+                        if (z < 0 || z >= bgGridDim) continue;
+                        for (int i = 0; i < bgGrid[x][y][z].size(); i++) {
+                            int pointID = bgGrid[x][y][z].at(i);
+                            Eigen::Vector3f p2 = points[pointID];
+                            float dist = vectorLength(point - p2);
+                            if (dist < r) {
+                                farFromOthers = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            if (isPointInBounds(point, 0, 1, 0, 1, 0, 1) && farFromOthers) {
                 points.push_back(point);
-                activeSamples.push_back(index++);
+                activeSamples.push_back(index);
+                bgGrid[(int)std::floor(point[0] * r)][(int)std::floor(point[1] * r)][(int)std::floor(point[2] * r)].push_back(index++);
 
                 flag = true;
                 break;

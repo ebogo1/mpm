@@ -5,6 +5,10 @@ ParticleGrid::ParticleGrid() {
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.05, 20);
+    // Write init state to .obj
+    QString name = QString("init");
+    writer.writeObjs(positions, name);
+
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
         Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0);

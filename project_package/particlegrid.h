@@ -17,7 +17,7 @@ public:
 
     int numParticles; // # of particles in simulation
 
-    float deltaTime = 0.05f; // Duration of one step
+    float deltaTime = 0.5f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
@@ -38,7 +38,14 @@ public:
     // Contains all particles for MPM
     std::vector<Particle> particles;
 
-
+    // Neo-Hookean parameters
+    float thetaC;
+    float thetaS;
+    float nu;
+    float k;
+    float xi;
+    float mu0;
+    float lambda0;
 
     // Returns worldspace position of cell c
     Eigen::Vector3f getCellPos(int c);

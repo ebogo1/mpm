@@ -262,14 +262,16 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
         std::cout << "Begin poisson" << std::endl;
 
-        Eigen::Vector3f point0 = randomPointInBound(0, 1, 0, 1, 0, 1);
+        Eigen::Vector3f point0 = randomPointInBound(0.3, 0.7, 0.3, 0.7, 0.3, 0.7);
         points.push_back(point0);
         activeSamples.push_back(index);
         bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);
 
         while(!activeSamples.empty()) {
-            //std::cout << "Placing point " << index << std::endl;
-            //std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
+            if (index % 100 == 0) {
+                std::cout << "Placing point " << index << std::endl;
+                std::cout << "Active samples are this long: " << activeSamples.size() << std::endl;
+            }
             int randSample = (int)(randomFloat() * activeSamples.size());
             int currSample = activeSamples[randSample];
 
@@ -301,7 +303,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
                 }
 
 
-                if (isPointInBounds(point, 0, 1, 0, 1, 0, 1) && farFromOthers) {
+                if (isPointInBounds(point, 0.3, 0.7, 0.3, 0.7, 0.3, 0.7) && farFromOthers) {
                     points.push_back(point);
                     activeSamples.push_back(index);
                     bgGrid[(int)std::floor(point[0] * r)][(int)std::floor(point[1] * r)][(int)std::floor(point[2] * r)].push_back(index++);

@@ -2,16 +2,27 @@
 
 #include "iostream"
 ParticleGrid::ParticleGrid() {
+    thetaC = 2.5f * std::pow(10.0f, -2.0f);
+    thetaS = 1.7f * std::pow(10.0f, -3.0f);
+    nu = 0.3f;
+    k = 100000.0f;
+    xi = 5.0f;
+    mu0 = k/(2.0f * (1.0f + nu));
+    lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
+
+    std::cout << "mu0 is " << mu0 << std::endl;
+    std::cout << "lambda0 is " << lambda0 << std::endl;
+
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.05, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.02, 20);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0, 0.064f/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -170,21 +181,26 @@ void ParticleGrid::populateGrid() {
 
 void ParticleGrid::runGridUpdate() {
     for(int i = 0; i < numCells; ++i) {
-        // Water pressure force
         for(int p : adjParticles.find(i).value()) {
+            /*// Water pressure force
             Eigen::Matrix3f F = particles[p].F;
             float J = F.determinant();
             float k = 2.2f;
             float gamma = 9.8f;
+            float pressure = k * (1.f / std::pow(J, gamma) - 1.f);
+            Eigen::Matrix3f stress = -pressure * Eigen::Matrix3f::Identity();
+
             if(std::abs(J) > 0.f) {
-                float pressure = k * (1.f / std::pow(J, gamma) - 1.f);
-                Eigen::Matrix3f stress = -pressure * Eigen::Matrix3f::Identity();
                 force[i] -= particles[p].V * stress * computeWeightGradient(particles[p].x, i);
-            }
+            }*/
+
+            // Neo-Hookean Forces
+            force[i] += particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
         }
+
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            //force[i][1] -= mass[i] * 3.5; // gravity
+            force[i][1] -= mass[i] * 3.5; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
             //velocity[i][1] -= deltaTime * 0.005;
         }
@@ -198,6 +214,19 @@ Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
         ans[i] = std::max(std::min(v[i], max), min);
     }
     return ans;
+}
+
+float minorDet(const Eigen::Matrix3f &m, int i, int j) {
+            return m(i == 0 ? 1 : 0, j == 0 ? 1 : 0) * m(i == 2 ? i - 1 : 2, j == 2 ? j - 1 : 2)
+                 - m(i == 0 ? 1 : 0, j == 2 ? j - 1 : 2) * m(i == 2 ? i - 1 : 2, j == 0 ? 1 : 0);
+        };
+
+Eigen::Matrix3f computeInvTrans(const Eigen::Matrix3f &F) {
+    Eigen::Matrix3f result;
+    result << minorDet(F, 0, 0), -minorDet(F, 0, 1),  minorDet(F, 0, 2),
+             -minorDet(F, 1, 0),  minorDet(F, 1, 1), -minorDet(F, 1, 2),
+              minorDet(F, 2, 0), -minorDet(F, 2, 1),  minorDet(F, 2, 2);
+    return result;
 }
 
 void ParticleGrid::populateParticles() {
@@ -219,18 +248,47 @@ void ParticleGrid::populateParticles() {
         Eigen::Matrix3f D = d * Eigen::Matrix3f::Identity();
         particles[i].C = B * D.inverse();
     }
-    // Update particle deformation gradients and positions
+
+    // Update particles
     for(int i = 0; i < numParticles; ++i) {
+        // Update particle deformation gradients
         Eigen::Matrix3f sum = Eigen::Matrix3f::Identity();
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
         for(int c : gridCells) {
-            sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
+            sum += velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
         }
 
-        particles[i].F *= sum * particles[i].F;
-        particles[i].x += deltaTime * particles[i].v;
+        // Update deformation gradient
+        particles[i].F = sum * deltaTime * particles[i].F;
 
+        //Update elastic deformation gradient
+        particles[i].Fe = sum * deltaTime * particles[i].Fe;
+        Eigen::Matrix3f F = particles[i].F;
+        Eigen::Matrix3f Fe = particles[i].Fe;
+        Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
+        Eigen::Matrix3f U = svd.matrixU();
+        Eigen::Vector3f Sigma = svd.singularValues();
+        Eigen::Matrix3f V = svd.matrixV();
+        Eigen::Matrix3f Vt = V.transpose();
+
+        for (int j = 0; j < 3; j++) {   //Clamp Sigma's diagonal values
+            Sigma[j] = std::min(std::max(Sigma[j], 1-thetaC), 1-thetaS);
+        }
+        Eigen::Matrix3f matSigma = Sigma.asDiagonal();
+        particles[i].Fe = U * matSigma * Vt;
+
+        // Update particle stresses
+        Eigen::Matrix3f R = U * Vt;
+        Eigen::Matrix3f FInvTrans = computeInvTrans(F);
+        float J = particles[i].F.determinant();
+        particles[i].mu = mu0 * std::exp(xi * (1 - J));
+        particles[i].lambda = lambda0 * std::exp(xi * (1 - J));
+
+        particles[i].Stress = 2.0 * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0) * FInvTrans;
+
+        //Update particle positions
+        particles[i].x += deltaTime * particles[i].v;
         // Clamp to gridDims x gridDims x gridDims grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);

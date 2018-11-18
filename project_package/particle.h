@@ -8,7 +8,7 @@ class Particle
 {
 public:
     Particle();
-    Particle(Eigen::Vector3f pos, int index, float mass);
+    Particle(Eigen::Vector3f pos, int index, float mass, float volume, float mu, float lambda);
 
     int index;
 
@@ -17,6 +17,8 @@ public:
     float V; // volume
     Eigen::Vector3f x; // position
     Eigen::Vector3f v; // velocity
+    float mu;
+    float lambda;
 
     // APIC
     Eigen::Matrix3f C; // Affine velocity matrix
@@ -24,8 +26,11 @@ public:
     // Maps a grid cell to corresponding weight
     QMap<int, float> weights;
 
-    // Deformation gradient
+    // Deformation gradients
     Eigen::Matrix3f F;
+    Eigen::Matrix3f Fe;
+    Eigen::Matrix3f Fp;
+    Eigen::Matrix3f Stress;
 
 };
 

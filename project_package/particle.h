@@ -8,7 +8,7 @@ class Particle
 {
 public:
     Particle();
-    Particle(Eigen::Vector3f pos, int index, float mass, float volume, float mu, float lambda);
+    Particle(Eigen::Vector3f pos, int index, float mass, float volume, float mu0, float lambda0);
 
     int index;
 

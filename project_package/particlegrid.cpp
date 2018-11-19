@@ -185,7 +185,9 @@ void ParticleGrid::populateGrid() {
             // Update weight maps
             std::vector<int> ps = std::vector<int>();
             ps.push_back(particles[i].index);
-            adjParticles.find(c).value().push_back(particles[i].index);
+            if (adjParticles.contains(c)) {
+                adjParticles.find(c).value().push_back(particles[i].index);
+            }
             particles[i].weights.insert(c, weight);
 
             numCells++;
@@ -203,7 +205,7 @@ void ParticleGrid::populateGrid() {
 //        std::cout << "Sum of weights for particle is " << sumWeights << std::endl;
         assert(std::abs(sumWeights - 1) < 1e-4);
 //        std::cout << "Sum of weight gradients for particle is " << sumGradients[0] << ", " << sumGradients[1] << ", " << sumGradients[2] << std::endl;
-//        assert(sumGradients[0] == 0.f && sumGradients[1] == 0.f && sumGradients[2] == 0.f);
+        assert(std::abs(sumGradients[0]) < 1e-4 && std::abs(sumGradients[1]) < 1e-4 && std::abs(sumGradients[2]) < 1e-4);
     }
 
     // APIC velocity transfser to grid
@@ -244,12 +246,12 @@ void ParticleGrid::runGridUpdate() {
             }*/
 
             // Neo-Hookean Forces
-            force[i] += particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
+            force[i] -= particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 0.5; // gravity
+            force[i][1] -= mass[i] * 12.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
             //velocity[i][1] -= deltaTime * 0.005;
         }
@@ -259,7 +261,7 @@ void ParticleGrid::runGridUpdate() {
 // Helper function to clamp Vector3f's
 Eigen::Vector3f Clamp(Eigen::Vector3f v, float min, float max) {
     Eigen::Vector3f ans;
-    for(int i = 0; i < 2; ++i) {
+    for(int i = 0; i < 3; ++i) {
         ans[i] = std::max(std::min(v[i], max), min);
     }
     return ans;
@@ -346,6 +348,7 @@ void ParticleGrid::populateParticles() {
             particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
         }
     }
+
     // Write to .obj
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;
     for(int i = 0; i < numParticles; ++i) {

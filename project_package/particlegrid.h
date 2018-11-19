@@ -17,7 +17,7 @@ public:
 
     int numParticles; // # of particles in simulation
 
-    float deltaTime = 0.5f; // Duration of one step
+    float deltaTime = 0.1f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]

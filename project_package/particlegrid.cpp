@@ -23,7 +23,7 @@ ParticleGrid::ParticleGrid() {
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0, 0.064f/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0/((float)positions.size()), 0.064f/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -36,7 +36,7 @@ Eigen::Vector3f ParticleGrid::getCellPos(int c) {
     int z = (float)c / ((float)Xdim * (float)Ydim);
     int y = ((float)c - (float)z * (float)Xdim * (float)Ydim) / (float)Xdim;
     int x = (float)c - (float)Xdim * ((float)y + (float)Ydim * (float)z);
-    return gridSize * Eigen::Vector3f(x, y, z) - Eigen::Vector3f(gridSize, gridSize, gridSize) + Eigen::Vector3f(0.5f, 0.5f, 0.5f);
+    return gridSize * Eigen::Vector3f(x, y, z) - Eigen::Vector3f(gridSize * 0.5f, gridSize * 0.5f, gridSize * 0.5f);
 }
 
 Eigen::Vector3i ParticleGrid::getCellIndices(int c) {
@@ -72,9 +72,7 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
 
 float computeWeightComponent(float x) {
     float absX = std::abs(x);
-    if (absX > 2.0f) {
-//        std::cout << "AbsX is greater than 2. It is " << absX << std::endl;
-    }
+    assert(absX <= 2.0f);
 
 //    if (absX >= 0.0 && absX < 1.0) {
 //        return 0.5 * std::pow(absX, 3.0) - std::pow(x, 2.0) + 2.0/3.0;
@@ -115,14 +113,26 @@ Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, 
 
 float computeWeightGradientComponent(float x) {
     // For some reason this is the only way that checking |x|>0 worked, please don't eat me
-    if(x > -0.0001 && x < 0.0001) {
-        return 0.f;
+//    if(x > -0.0001 && x < 0.0001) {
+//        return 0.f;
+//    }
+//    if (std::abs(x) > 0 && std::abs(x) < 1) {
+//        return 3*x*x*x*0.5/std::abs(x) - 2*x;
+//    }
+//    else if (std::abs(x) >= 1 && std::abs(x) < 2) {
+//        return x*x*x*-0.5/std::abs(x) + 2*x - 2*x/std::abs(x);
+//    }
+//    else {
+//        return 0.f;
+//    }
+
+    float absX = std::abs(x);
+    assert(absX <= 2.0f);
+    if (absX < 0.5f) {
+        return -2.f * x;
     }
-    if (std::abs(x) > 0 && std::abs(x) < 1) {
-        return 3*x*x*x*0.5/std::abs(x) - 2*x;
-    }
-    else if (std::abs(x) >= 1 && std::abs(x) < 2) {
-        return x*x*x*-0.5/std::abs(x) + 2*x - 2*x/std::abs(x);
+    else if (absX < 1.5) {
+        return x - 1.5f * (x < 0.f ? - 1.f :  1.f);
     }
     else {
         return 0.f;
@@ -190,7 +200,7 @@ void ParticleGrid::populateGrid() {
             sumWeights += weight;
             sumGradients += gradient;
         }
-        std::cout << "Sum of weights for particle is " << sumWeights << std::endl;
+//        std::cout << "Sum of weights for particle is " << sumWeights << std::endl;
         assert(std::abs(sumWeights - 1) < 1e-4);
 //        std::cout << "Sum of weight gradients for particle is " << sumGradients[0] << ", " << sumGradients[1] << ", " << sumGradients[2] << std::endl;
 //        assert(sumGradients[0] == 0.f && sumGradients[1] == 0.f && sumGradients[2] == 0.f);
@@ -239,7 +249,7 @@ void ParticleGrid::runGridUpdate() {
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 3.5; // gravity
+            force[i][1] -= mass[i] * 0.5; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
             //velocity[i][1] -= deltaTime * 0.005;
         }
@@ -324,9 +334,9 @@ void ParticleGrid::populateParticles() {
         particles[i].mu = mu0 * std::exp(xi * (1 - J));
         particles[i].lambda = lambda0 * std::exp(xi * (1 - J));
         particles[i].Stress = 2.0 * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0) * FInvTrans;
-        if (particles[i].Stress.hasNaN()) {
-            std::cout << "NAN" << std::endl;
-        }
+//        if (particles[i].Stress.hasNaN()) {
+//            std::cout << "NAN" << std::endl;
+//        }
 
         //Update particle positions
         particles[i].x += deltaTime * particles[i].v;

@@ -16,7 +16,7 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.02, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.06, 20);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
@@ -29,7 +29,7 @@ ParticleGrid::ParticleGrid() {
     numParticles = positions.size();
     writer = ParticleWriter();
     iter = 0;
-    Xdim = Ydim = Zdim = ParticleGrid::gridDims + 2;
+    Xdim = Ydim = Zdim = ParticleGrid::gridDims + 3;
 }
 
 Eigen::Vector3f ParticleGrid::getCellPos(int c) {
@@ -61,9 +61,14 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
         for (int j = -1; j < 2; j++) {
             for (int k = -1; k < 2; k++) {
                 Eigen::Vector3i newPos = gridPos + Eigen::Vector3i(i, j, k);
-//                if(inBounds(newPos)) {
-                    positions.push_back((int)((float)newPos[0] + (float)Ydim * ((float)newPos[1] + (float)Zdim * (float)newPos[2])));
-//                }
+                int c = (int)((float)newPos[0] + (float)Ydim * ((float)newPos[1] + (float)Zdim * (float)newPos[2]));
+//              if(inBounds(newPos)) {
+                    positions.push_back(c);
+                    Eigen::Vector3i indices = getCellIndices(c);
+                    if (newPos[0] != indices[0] || newPos[1] != indices[1] || newPos[2] != indices[2]) {
+                        std::cout << indices << std::endl;
+                    }
+//              }
             }
         }
     }
@@ -72,7 +77,10 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
 
 float computeWeightComponent(float x) {
     float absX = std::abs(x);
-    assert(absX <= 2.0f);
+    if (absX > 2.0f) {
+        std::cout << "Bad absX" << std::cout;
+    }
+    //assert(absX <= 2.0f);
 
 //    if (absX >= 0.0 && absX < 1.0) {
 //        return 0.5 * std::pow(absX, 3.0) - std::pow(x, 2.0) + 2.0/3.0;
@@ -336,9 +344,9 @@ void ParticleGrid::populateParticles() {
         particles[i].mu = mu0 * std::exp(xi * (1 - J));
         particles[i].lambda = lambda0 * std::exp(xi * (1 - J));
         particles[i].Stress = 2.0 * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0) * FInvTrans;
-//        if (particles[i].Stress.hasNaN()) {
-//            std::cout << "NAN" << std::endl;
-//        }
+        if (particles[i].Stress.hasNaN()) {
+            std::cout << "NAN" << std::endl;
+        }
 
         //Update particle positions
         particles[i].x += deltaTime * particles[i].v;
@@ -347,6 +355,7 @@ void ParticleGrid::populateParticles() {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
             particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
         }
+
     }
 
     // Write to .obj

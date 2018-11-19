@@ -72,9 +72,7 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
 
 float computeWeightComponent(float x) {
     float absX = std::abs(x);
-    if (absX > 2.0f) {
-//        std::cout << "AbsX is greater than 2. It is " << absX << std::endl;
-    }
+    assert(absX <= 2.0f);
 
 //    if (absX >= 0.0 && absX < 1.0) {
 //        return 0.5 * std::pow(absX, 3.0) - std::pow(x, 2.0) + 2.0/3.0;
@@ -182,18 +180,13 @@ void ParticleGrid::populateGrid() {
         }
         assert(numCells == 27);
 
-        float sumWeights = 0;
-        Eigen::Vector3f sumGradients = Eigen::Vector3f(0, 0, 0);
+        float sum = 0;
         for(int c : gridCells) {
             float weight = particles[i].weights.find(c).value();
-            Eigen::Vector3f gradient = computeWeightGradient(particles[i].x, c);
-            sumWeights += weight;
-            sumGradients += gradient;
+            sum += weight;
         }
-        std::cout << "Sum of weights for particle is " << sumWeights << std::endl;
-        assert(std::abs(sumWeights - 1) < 1e-4);
-//        std::cout << "Sum of weight gradients for particle is " << sumGradients[0] << ", " << sumGradients[1] << ", " << sumGradients[2] << std::endl;
-//        assert(sumGradients[0] == 0.f && sumGradients[1] == 0.f && sumGradients[2] == 0.f);
+        std::cout << "Sum of weights for particle is " << sum << std::endl;
+        assert(sum == 1);
     }
 
     // APIC velocity transfser to grid

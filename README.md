@@ -6,3 +6,7 @@ https://vimeo.com/299253537
 
 APIC alpha
 https://vimeo.com/299253291
+
+Neo-Hookean beta
+https://vimeo.com/301882308
+https://vimeo.com/301882315

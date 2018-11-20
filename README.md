@@ -11,6 +11,14 @@ https://vimeo.com/299253291
 
 Neo-Hookean beta (Password: regoopify)
 
+https://vimeo.com/301884431
+
+https://vimeo.com/301891750
+
 https://vimeo.com/301882308
 
 https://vimeo.com/301882315
+
+Gravity beta (Password: regoopify)
+
+https://vimeo.com/301900759

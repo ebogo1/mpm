@@ -6,7 +6,7 @@ ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
     nu = 0.3f;
-    k = 100000.0f;
+    k = 10000.0f;
     xi = 5.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
@@ -16,14 +16,14 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.06, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.055, 20);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0/((float)positions.size()), 0.064f/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0/((float)positions.size()), 0.032f/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -254,7 +254,10 @@ void ParticleGrid::runGridUpdate() {
             }*/
 
             // Neo-Hookean Forces
-            force[i] -= particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
+            Eigen::Vector3f stressForce = particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
+            if (stressForce.norm() > 1e-6) {
+                force[i] -= stressForce;
+            }
         }
 
         // Compute next iteration's cell velocities
@@ -341,9 +344,9 @@ void ParticleGrid::populateParticles() {
         Eigen::Matrix3f R = U * Vt;
         Eigen::Matrix3f FInvTrans = computeInvTrans(F);
         float J = particles[i].F.determinant();
-        particles[i].mu = mu0 * std::exp(xi * (1 - J));
-        particles[i].lambda = lambda0 * std::exp(xi * (1 - J));
-        particles[i].Stress = 2.0 * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0) * FInvTrans;
+        particles[i].mu = mu0 * std::exp(xi * (1.0f - J));
+        particles[i].lambda = lambda0 * std::exp(xi * (1.0f - J));
+        particles[i].Stress = 2.0f * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0f) * J * FInvTrans;
         if (particles[i].Stress.hasNaN()) {
             std::cout << "NAN" << std::endl;
         }

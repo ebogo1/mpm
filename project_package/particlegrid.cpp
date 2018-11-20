@@ -258,13 +258,13 @@ void ParticleGrid::runGridUpdate() {
             if (stressForce.norm() > 1e-6) {
                 force[i] -= stressForce;
             }
+            std::cout << "Stress force is " << stressForce << std::endl;
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
             force[i][1] -= mass[i] * 12.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
-            //velocity[i][1] -= deltaTime * 0.005;
         }
     }
 }
@@ -332,6 +332,34 @@ void ParticleGrid::populateParticles() {
         Eigen::Matrix3f U = svd.matrixU();
         Eigen::Vector3f Sigma = svd.singularValues();
         Eigen::Matrix3f V = svd.matrixV();
+
+        Eigen::Vector3f temp;
+        for (unsigned int i = 1; i < Sigma.size(); ++i) {
+            for (unsigned int j = i; j > 0 && Sigma(j - 1) < Sigma(j); j--) {
+                std::swap(Sigma(j), Sigma(j - 1));
+
+                temp = U.row(j);
+                U.row(j) = U.row(j - 1);
+                U.row(j - 1) = temp;
+
+                temp = V.row(j);
+                V.row(j) = V.row(j - 1);
+                V.row(j - 1) = temp;
+            }
+        }
+
+        if (U.determinant() < 0) {
+            U.col(3 - 1) *= -1;
+            Sigma(3 - 1) *= -1;
+        }
+        if (V.determinant() < 0) {
+            V.col(3 - 1) *= -1;
+            Sigma(3 - 1) *= -1;
+        }
+
+        assert(U.determinant() > 0);
+        assert(V.determinant() > 0);
+
         Eigen::Matrix3f Vt = V.transpose();
 
         for (int j = 0; j < 3; j++) {   //Clamp Sigma's diagonal values

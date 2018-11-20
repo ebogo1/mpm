@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     ParticleGrid PG = ParticleGrid();
-    for(int i = 0; i < 2000; ++i) {
+    for(int i = 0; i < 1000; ++i) {
         PG.runMPM();
         std::cout << "Wrote frame " << i << std::endl;
     }

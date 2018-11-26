@@ -5,8 +5,8 @@
 ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
-    nu = 0.3f;
-    k = 10000.0f;
+    nu = 0.4f; // Poisson's ratio
+    k = 1500.0f; // Young's modulus
     xi = 5.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
@@ -16,19 +16,20 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.055, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.0325, 20);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0/((float)positions.size()), 0.032f/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 5.f/((float)positions.size()), 0.165/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
     writer = ParticleWriter();
     iter = 0;
+    frameNumber = 0;
     Xdim = Ydim = Zdim = ParticleGrid::gridDims + 3;
 }
 
@@ -78,7 +79,7 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
 float computeWeightComponent(float x) {
     float absX = std::abs(x);
     if (absX > 2.0f) {
-        std::cout << "Bad absX" << std::cout;
+        std::cout << "Bad absX" << std::endl;
     }
     //assert(absX <= 2.0f);
 
@@ -200,7 +201,7 @@ void ParticleGrid::populateGrid() {
 
             numCells++;
         }
-        assert(numCells == 27);
+        //assert(numCells == 27);
 
         float sumWeights = 0;
         Eigen::Vector3f sumGradients = Eigen::Vector3f(0, 0, 0);
@@ -211,9 +212,9 @@ void ParticleGrid::populateGrid() {
             sumGradients += gradient;
         }
 //        std::cout << "Sum of weights for particle is " << sumWeights << std::endl;
-        assert(std::abs(sumWeights - 1) < 1e-4);
+        //assert(std::abs(sumWeights - 1) < 1e-4);
 //        std::cout << "Sum of weight gradients for particle is " << sumGradients[0] << ", " << sumGradients[1] << ", " << sumGradients[2] << std::endl;
-        assert(std::abs(sumGradients[0]) < 1e-4 && std::abs(sumGradients[1]) < 1e-4 && std::abs(sumGradients[2]) < 1e-4);
+        //assert(std::abs(sumGradients[0]) < 1e-4 && std::abs(sumGradients[1]) < 1e-4 && std::abs(sumGradients[2]) < 1e-4);
     }
 
     // APIC velocity transfser to grid
@@ -258,12 +259,12 @@ void ParticleGrid::runGridUpdate() {
             if (stressForce.norm() > 1e-6) {
                 force[i] -= stressForce;
             }
-            std::cout << "Stress force is " << stressForce << std::endl;
+           // std::cout << "Stress force is " << stressForce << std::endl;
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 12.f; // gravity
+            force[i][1] -= mass[i] * 10.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
         }
     }
@@ -318,14 +319,14 @@ void ParticleGrid::populateParticles() {
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
         for(int c : gridCells) {
-            sum += velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
+            sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
         }
 
         // Update deformation gradient
-        particles[i].F = sum * deltaTime * particles[i].F;
+        particles[i].F = sum * particles[i].F;
 
         //Update elastic deformation gradient
-        particles[i].Fe = sum * deltaTime * particles[i].Fe;
+        particles[i].Fe = sum * particles[i].Fe;
         Eigen::Matrix3f F = particles[i].F;
         Eigen::Matrix3f Fe = particles[i].Fe;
         Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
@@ -357,8 +358,8 @@ void ParticleGrid::populateParticles() {
             Sigma(3 - 1) *= -1;
         }
 
-        assert(U.determinant() > 0);
-        assert(V.determinant() > 0);
+//        assert(U.determinant() > 0);
+//        assert(V.determinant() > 0);
 
         Eigen::Matrix3f Vt = V.transpose();
 
@@ -393,9 +394,13 @@ void ParticleGrid::populateParticles() {
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;
     for(int i = 0; i < numParticles; ++i) {
         ps.push_back(particles[i].x);
+    }    
+    if(iter % 60 == 0) {
+        QString name = QString("moreGravity" + QString::number(frameNumber));
+        writer.writeObjs(ps, name);
+        std::cout << "Wrote frame" << frameNumber << std::endl;
+        frameNumber++;
     }
-    QString name = QString("frame" + QString::number(iter));
-    writer.writeObjs(ps, name);
     iter++;
 }
 

@@ -13,11 +13,12 @@ public:
     ParticleGrid();
 
     int iter;
+    int frameNumber;
     ParticleWriter writer;
 
     int numParticles; // # of particles in simulation
 
-    float deltaTime = 0.002f; // Duration of one step
+    float deltaTime = 0.000001f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]

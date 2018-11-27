@@ -264,7 +264,7 @@ void ParticleGrid::runGridUpdate() {
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 10.f; // gravity
+            force[i][1] -= mass[i] * 4.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
         }
     }
@@ -385,7 +385,15 @@ void ParticleGrid::populateParticles() {
         // Clamp to gridDims x gridDims x gridDims grid
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
-            particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
+            if (particles[i].x[0] == 0.0f || particles[i].x[0] == 1.0f) {
+                particles[i].v[0] *= -0.2;
+            }
+            if (particles[i].x[1] == 0.0f || particles[i].x[1] == 1.0f) {
+                particles[i].v[1] *= -0.2;
+            }
+            if (particles[i].x[2] == 0.0f || particles[i].x[2] == 1.0f) {
+                particles[i].v[2] *= -0.2;
+            }
         }
 
     }
@@ -396,7 +404,7 @@ void ParticleGrid::populateParticles() {
         ps.push_back(particles[i].x);
     }    
     if(iter % 60 == 0) {
-        QString name = QString("moreGravity" + QString::number(frameNumber));
+        QString name = QString("frame" + QString::number(frameNumber));
         writer.writeObjs(ps, name);
         std::cout << "Wrote frame" << frameNumber << std::endl;
         frameNumber++;

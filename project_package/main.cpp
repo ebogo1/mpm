@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     ParticleGrid PG = ParticleGrid();
-    for(int i = 0; i < 5760; ++i) {
+    for(int i = 0; i < 5760 * 4; ++i) {
         PG.runMPM();
         std::cout << "Finished iteration " << i << std::endl;
     }

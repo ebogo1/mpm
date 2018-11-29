@@ -23,7 +23,7 @@ ParticleGrid::ParticleGrid() {
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 5.f/((float)positions.size()), 0.165/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0f/((float)positions.size()), 0.032f/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -257,14 +257,14 @@ void ParticleGrid::runGridUpdate() {
             // Neo-Hookean Forces
             Eigen::Vector3f stressForce = particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
             if (stressForce.norm() > 1e-6) {
-                force[i] -= stressForce;
+                //force[i] -= stressForce;
             }
            // std::cout << "Stress force is " << stressForce << std::endl;
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 4.f; // gravity
+            force[i][1] -= mass[i] * 2.0f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
         }
     }
@@ -386,13 +386,13 @@ void ParticleGrid::populateParticles() {
         if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
             particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
             if (particles[i].x[0] == 0.0f || particles[i].x[0] == 1.0f) {
-                particles[i].v[0] *= -0.2;
+                particles[i].v[0] = 0.0;
             }
             if (particles[i].x[1] == 0.0f || particles[i].x[1] == 1.0f) {
-                particles[i].v[1] *= -0.2;
+                particles[i].v[1] = 0.0;
             }
             if (particles[i].x[2] == 0.0f || particles[i].x[2] == 1.0f) {
-                particles[i].v[2] *= -0.2;
+                particles[i].v[2] = 0.0;
             }
         }
 

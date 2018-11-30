@@ -4,7 +4,7 @@ ParticleWriter::ParticleWriter()
 {}
 
 void ParticleWriter::writeObjs(std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > particles, QString filename) {    
-    QString path = QCoreApplication::applicationDirPath() + QString("/") + filename + QString(".obj");
+    QString path = QCoreApplication::applicationDirPath() + QString("/k1500_grav4/") + filename + QString(".obj");
     QFile objFile(path);
     if(!objFile.open(QIODevice::WriteOnly)){
         objFile.close();

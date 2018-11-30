@@ -68,6 +68,9 @@ public:
     // Performs update on grid cell values
     void runGridUpdate();
 
+    // Resolves collisions with walls
+    void resolveCollisions(int index);
+
     // Sets appropriate weighted values for each particle (G2P)
     void populateParticles();
 

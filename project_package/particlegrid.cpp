@@ -6,7 +6,7 @@ ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
     nu = 0.4f; // Poisson's ratio
-    k = 1500.0f; // Young's modulus
+    k = 1500.f; // Young's modulus
     xi = 5.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
@@ -16,14 +16,14 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.0325, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.022, 20);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.0f/((float)positions.size()), 0.032f/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 2.f/((float)positions.size()), 0.06/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -57,19 +57,17 @@ std::vector<int> ParticleGrid::getNeighbors(Eigen::Vector3f pPos) {
     std::vector<int> positions;
     Eigen::Vector3f temp = pPos / gridSize;
     Eigen::Vector3i gridPos = Eigen::Vector3i(std::floor(temp[0]), std::floor(temp[1]), std::floor(temp[2]));
-    gridPos += Eigen::Vector3i(1, 1, 1); // Account for shifted 11^3 grid
+    gridPos += Eigen::Vector3i(1, 1, 1); // Account for shifted (n+1)^3 grid
     for (int i = -1; i < 2; i++) {
         for (int j = -1; j < 2; j++) {
             for (int k = -1; k < 2; k++) {
                 Eigen::Vector3i newPos = gridPos + Eigen::Vector3i(i, j, k);
                 int c = (int)((float)newPos[0] + (float)Ydim * ((float)newPos[1] + (float)Zdim * (float)newPos[2]));
-//              if(inBounds(newPos)) {
-                    positions.push_back(c);
-                    Eigen::Vector3i indices = getCellIndices(c);
-                    if (newPos[0] != indices[0] || newPos[1] != indices[1] || newPos[2] != indices[2]) {
-                        std::cout << indices << std::endl;
-                    }
-//              }
+                positions.push_back(c);
+                Eigen::Vector3i indices = getCellIndices(c);
+                if (newPos[0] != indices[0] || newPos[1] != indices[1] || newPos[2] != indices[2]) {
+                    std::cout << indices << std::endl;
+                }
             }
         }
     }
@@ -83,16 +81,6 @@ float computeWeightComponent(float x) {
     }
     //assert(absX <= 2.0f);
 
-//    if (absX >= 0.0 && absX < 1.0) {
-//        return 0.5 * std::pow(absX, 3.0) - std::pow(x, 2.0) + 2.0/3.0;
-//    }
-//    else if (absX >= 1.0 && absX < 2.0) {
-//        return -(1.0/6.0) * std::pow(absX, 3.0) + std::pow(x, 2.0) - 2.0 * absX + (4.0/3.0);
-//    }
-//    else {
-//        return 0;
-//    }
-
     if (absX < 0.5f) {
         return 0.75f - pow(absX, 2.f);
     }
@@ -102,15 +90,10 @@ float computeWeightComponent(float x) {
     else {
         return 0.f;
     }
-
-//    if (absX <= 1.f) {
-//        return 1;
-//    }
-//    else return 0;
 }
 
 Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, int z) {
-    // x-1, y-1, z-1 required in order to account for shifted 11^3 grid
+    // x-1, y-1, z-1 required in order to account for shifted (n+1)^3 grid
     float dx = (pPos[0] - ((float)x-1.f + 0.5f) * gridSize)/gridSize;
     float dy = (pPos[1] - ((float)y-1.f + 0.5f) * gridSize)/gridSize;
     float dz = (pPos[2] - ((float)z-1.f + 0.5f) * gridSize)/gridSize;
@@ -121,20 +104,6 @@ Eigen::Vector3f ParticleGrid::computeWeight(Eigen::Vector3f pPos, int x, int y, 
 }
 
 float computeWeightGradientComponent(float x) {
-    // For some reason this is the only way that checking |x|>0 worked, please don't eat me
-//    if(x > -0.0001 && x < 0.0001) {
-//        return 0.f;
-//    }
-//    if (std::abs(x) > 0 && std::abs(x) < 1) {
-//        return 3*x*x*x*0.5/std::abs(x) - 2*x;
-//    }
-//    else if (std::abs(x) >= 1 && std::abs(x) < 2) {
-//        return x*x*x*-0.5/std::abs(x) + 2*x - 2*x/std::abs(x);
-//    }
-//    else {
-//        return 0.f;
-//    }
-
     float absX = std::abs(x);
     assert(absX <= 2.0f);
     if (absX < 0.5f) {
@@ -189,7 +158,6 @@ void ParticleGrid::populateGrid() {
 
             // Mass summation
             mass[c] += particles[i].m * weight;
-            //velocity[c] += particles[i].v * weight;
 
             // Update weight maps
             std::vector<int> ps = std::vector<int>();
@@ -257,15 +225,28 @@ void ParticleGrid::runGridUpdate() {
             // Neo-Hookean Forces
             Eigen::Vector3f stressForce = particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
             if (stressForce.norm() > 1e-6) {
-                //force[i] -= stressForce;
+                force[i] -= stressForce;
             }
            // std::cout << "Stress force is " << stressForce << std::endl;
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 2.0f; // gravity
+            force[i][1] -= mass[i] * 4.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
+
+            // Clamp velocities inside wall cells
+            resolveCollisions(i);
+        }
+    }
+}
+
+void ParticleGrid::resolveCollisions(int index) {
+    Eigen::Vector3i indices = getCellIndices(index);
+    for(int i = 0; i < 3; i++) {
+        if(indices[i] < 3 || indices[i] > gridDims - 1) {
+            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);
+            return;
         }
     }
 }
@@ -300,6 +281,7 @@ void ParticleGrid::populateParticles() {
             particles[p].v += w_ip * particles[p].m * velocity[i];
         }
     }
+
     // Update particle Affine velocity matrices
     for(int i = 0; i < numParticles; ++i) {
         Eigen::Matrix3f B = Eigen::Matrix3f::Zero();
@@ -312,20 +294,18 @@ void ParticleGrid::populateParticles() {
         particles[i].C = B * D.inverse();
     }
 
-    // Update particles
-    for(int i = 0; i < numParticles; ++i) {
-        // Update particle deformation gradients
+    for(int i = 0; i < numParticles; ++i) {   
+        // Update deformation gradient (F)     
         Eigen::Matrix3f sum = Eigen::Matrix3f::Identity();
         std::vector<int> gridCells = getNeighbors(particles[i].x);
 
         for(int c : gridCells) {
             sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
         }
-
-        // Update deformation gradient
+        
         particles[i].F = sum * particles[i].F;
 
-        //Update elastic deformation gradient
+        //Update elastic deformation gradient (F_e)
         particles[i].Fe = sum * particles[i].Fe;
         Eigen::Matrix3f F = particles[i].F;
         Eigen::Matrix3f Fe = particles[i].Fe;
@@ -369,7 +349,7 @@ void ParticleGrid::populateParticles() {
         Eigen::Matrix3f matSigma = Sigma.asDiagonal();
         particles[i].Fe = U * matSigma * Vt;
 
-        // Update particle stresses
+        // Update particle stress
         Eigen::Matrix3f R = U * Vt;
         Eigen::Matrix3f FInvTrans = computeInvTrans(F);
         float J = particles[i].F.determinant();
@@ -383,22 +363,14 @@ void ParticleGrid::populateParticles() {
         //Update particle positions
         particles[i].x += deltaTime * particles[i].v;
         // Clamp to gridDims x gridDims x gridDims grid
-        if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
-            particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
-            if (particles[i].x[0] == 0.0f || particles[i].x[0] == 1.0f) {
-                particles[i].v[0] = 0.0;
-            }
-            if (particles[i].x[1] == 0.0f || particles[i].x[1] == 1.0f) {
-                particles[i].v[1] = 0.0;
-            }
-            if (particles[i].x[2] == 0.0f || particles[i].x[2] == 1.0f) {
-                particles[i].v[2] = 0.0;
-            }
-        }
+//        if(particles[i].x != Clamp(particles[i].x, 0.f, 1.f)) {
+//            particles[i].x = Clamp(particles[i].x, 0.f, 1.f);
+//            particles[i].v = Eigen::Vector3f(0.f, 0.f, 0.f);
+//        }
 
     }
 
-    // Write to .obj
+    // Write frame to .obj
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ps;
     for(int i = 0; i < numParticles; ++i) {
         ps.push_back(particles[i].x);

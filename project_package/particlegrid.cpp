@@ -16,14 +16,14 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.022, 20);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.032, 16);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 2.f/((float)positions.size()), 0.06/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.f/((float)positions.size()), 0.03/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -158,6 +158,7 @@ void ParticleGrid::populateGrid() {
 
             // Mass summation
             mass[c] += particles[i].m * weight;
+            velocity[c] += particles[i].v * weight;
 
             // Update weight maps
             std::vector<int> ps = std::vector<int>();
@@ -185,19 +186,19 @@ void ParticleGrid::populateGrid() {
         //assert(std::abs(sumGradients[0]) < 1e-4 && std::abs(sumGradients[1]) < 1e-4 && std::abs(sumGradients[2]) < 1e-4);
     }
 
-    // APIC velocity transfser to grid
-    for(int i = 0; i < numCells; i++) {
-        for(int p : adjParticles.find(i).value()) {
-            Eigen::Vector3f cellPos = getCellPos(i);
-            float w_ip = particles[p].weights.find(i).value();
-            if(mass[i] == 0.f) {
-                velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
-            }
-            else {
-                velocity[i] += w_ip * particles[p].m * (particles[p].v + particles[p].C * (cellPos - particles[p].x)) / mass[i];
-            }
-        }
-    }
+//    // APIC velocity transfser to grid
+//    for(int i = 0; i < numCells; i++) {
+//        for(int p : adjParticles.find(i).value()) {
+//            Eigen::Vector3f cellPos = getCellPos(i);
+//            float w_ip = particles[p].weights.find(i).value();
+//            if(mass[i] == 0.f) {
+//                velocity[i] = Eigen::Vector3f(0.f, 0.f, 0.f);
+//            }
+//            else {
+//                velocity[i] += w_ip * particles[p].m * (particles[p].v + particles[p].C * (cellPos - particles[p].x)) / mass[i];
+//            }
+//        }
+//    }
 
     // Extra check for APIC Method
     for(int i = 0; i < numCells; ++i) {
@@ -223,16 +224,16 @@ void ParticleGrid::runGridUpdate() {
             }*/
 
             // Neo-Hookean Forces
-            Eigen::Vector3f stressForce = particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
-            if (stressForce.norm() > 1e-6) {
-                force[i] -= stressForce;
-            }
+//            Eigen::Vector3f stressForce = particles[p].V * particles[p].Stress * particles[p].F.transpose() * computeWeightGradient(particles[p].x, i);
+//            if (stressForce.norm() > 1e-6) {
+//                force[i] -= stressForce;
+//            }
            // std::cout << "Stress force is " << stressForce << std::endl;
         }
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 4.f; // gravity
+            force[i][1] -= mass[i] * 9.8f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
 
             // Clamp velocities inside wall cells
@@ -244,8 +245,8 @@ void ParticleGrid::runGridUpdate() {
 void ParticleGrid::resolveCollisions(int index) {
     Eigen::Vector3i indices = getCellIndices(index);
     for(int i = 0; i < 3; i++) {
-        if(indices[i] < 3 || indices[i] > gridDims - 1) {
-            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);
+        if(indices[i] < 10 || indices[i] > gridDims - 3) {
+            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);            
             return;
         }
     }
@@ -283,82 +284,82 @@ void ParticleGrid::populateParticles() {
     }
 
     // Update particle Affine velocity matrices
-    for(int i = 0; i < numParticles; ++i) {
-        Eigen::Matrix3f B = Eigen::Matrix3f::Zero();
-        for(int c : particles[i].weights.keys()) {
-            Eigen::Vector3f x = getCellPos(c) - particles[i].x;
-            B += particles[i].weights.find(c).value() * velocity[c] * x.transpose();
-        }
-        float d = gridSize * gridSize / 3.f;
-        Eigen::Matrix3f D = d * Eigen::Matrix3f::Identity();
-        particles[i].C = B * D.inverse();
-    }
+//    for(int i = 0; i < numParticles; ++i) {
+//        Eigen::Matrix3f B = Eigen::Matrix3f::Zero();
+//        for(int c : particles[i].weights.keys()) {
+//            Eigen::Vector3f x = getCellPos(c) - particles[i].x;
+//            B += particles[i].weights.find(c).value() * velocity[c] * x.transpose();
+//        }
+//        float d = gridSize * gridSize / 3.f;
+//        Eigen::Matrix3f D = d * Eigen::Matrix3f::Identity();
+//        particles[i].C = B * D.inverse();
+//    }
 
     for(int i = 0; i < numParticles; ++i) {   
-        // Update deformation gradient (F)     
-        Eigen::Matrix3f sum = Eigen::Matrix3f::Identity();
-        std::vector<int> gridCells = getNeighbors(particles[i].x);
+//        // Update deformation gradient (F)
+//        Eigen::Matrix3f sum = Eigen::Matrix3f::Identity();
+//        std::vector<int> gridCells = getNeighbors(particles[i].x);
 
-        for(int c : gridCells) {
-            sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
-        }
+//        for(int c : gridCells) {
+//            sum += deltaTime * velocity[c] * computeWeightGradient(particles[i].x, c).transpose();
+//        }
         
-        particles[i].F = sum * particles[i].F;
+//        particles[i].F = sum * particles[i].F;
 
-        //Update elastic deformation gradient (F_e)
-        particles[i].Fe = sum * particles[i].Fe;
-        Eigen::Matrix3f F = particles[i].F;
-        Eigen::Matrix3f Fe = particles[i].Fe;
-        Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        Eigen::Matrix3f U = svd.matrixU();
-        Eigen::Vector3f Sigma = svd.singularValues();
-        Eigen::Matrix3f V = svd.matrixV();
+//        //Update elastic deformation gradient (F_e)
+//        particles[i].Fe = sum * particles[i].Fe;
+//        Eigen::Matrix3f F = particles[i].F;
+//        Eigen::Matrix3f Fe = particles[i].Fe;
+//        Eigen::JacobiSVD<Eigen::Matrix3f> svd(Fe, Eigen::ComputeFullU | Eigen::ComputeFullV);
+//        Eigen::Matrix3f U = svd.matrixU();
+//        Eigen::Vector3f Sigma = svd.singularValues();
+//        Eigen::Matrix3f V = svd.matrixV();
 
-        Eigen::Vector3f temp;
-        for (unsigned int i = 1; i < Sigma.size(); ++i) {
-            for (unsigned int j = i; j > 0 && Sigma(j - 1) < Sigma(j); j--) {
-                std::swap(Sigma(j), Sigma(j - 1));
+//        Eigen::Vector3f temp;
+//        for (unsigned int i = 1; i < Sigma.size(); ++i) {
+//            for (unsigned int j = i; j > 0 && Sigma(j - 1) < Sigma(j); j--) {
+//                std::swap(Sigma(j), Sigma(j - 1));
 
-                temp = U.row(j);
-                U.row(j) = U.row(j - 1);
-                U.row(j - 1) = temp;
+//                temp = U.row(j);
+//                U.row(j) = U.row(j - 1);
+//                U.row(j - 1) = temp;
 
-                temp = V.row(j);
-                V.row(j) = V.row(j - 1);
-                V.row(j - 1) = temp;
-            }
-        }
+//                temp = V.row(j);
+//                V.row(j) = V.row(j - 1);
+//                V.row(j - 1) = temp;
+//            }
+//        }
 
-        if (U.determinant() < 0) {
-            U.col(3 - 1) *= -1;
-            Sigma(3 - 1) *= -1;
-        }
-        if (V.determinant() < 0) {
-            V.col(3 - 1) *= -1;
-            Sigma(3 - 1) *= -1;
-        }
+//        if (U.determinant() < 0) {
+//            U.col(3 - 1) *= -1;
+//            Sigma(3 - 1) *= -1;
+//        }
+//        if (V.determinant() < 0) {
+//            V.col(3 - 1) *= -1;
+//            Sigma(3 - 1) *= -1;
+//        }
 
-//        assert(U.determinant() > 0);
-//        assert(V.determinant() > 0);
+////        assert(U.determinant() > 0);
+////        assert(V.determinant() > 0);
 
-        Eigen::Matrix3f Vt = V.transpose();
+//        Eigen::Matrix3f Vt = V.transpose();
 
-        for (int j = 0; j < 3; j++) {   //Clamp Sigma's diagonal values
-            Sigma[j] = std::min(std::max(Sigma[j], 1-thetaC), 1-thetaS);
-        }
-        Eigen::Matrix3f matSigma = Sigma.asDiagonal();
-        particles[i].Fe = U * matSigma * Vt;
+//        for (int j = 0; j < 3; j++) {   //Clamp Sigma's diagonal values
+//            Sigma[j] = std::min(std::max(Sigma[j], 1-thetaC), 1-thetaS);
+//        }
+//        Eigen::Matrix3f matSigma = Sigma.asDiagonal();
+//        particles[i].Fe = U * matSigma * Vt;
 
-        // Update particle stress
-        Eigen::Matrix3f R = U * Vt;
-        Eigen::Matrix3f FInvTrans = computeInvTrans(F);
-        float J = particles[i].F.determinant();
-        particles[i].mu = mu0 * std::exp(xi * (1.0f - J));
-        particles[i].lambda = lambda0 * std::exp(xi * (1.0f - J));
-        particles[i].Stress = 2.0f * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0f) * J * FInvTrans;
-        if (particles[i].Stress.hasNaN()) {
-            std::cout << "NAN" << std::endl;
-        }
+//        // Update particle stress
+//        Eigen::Matrix3f R = U * Vt;
+//        Eigen::Matrix3f FInvTrans = computeInvTrans(F);
+//        float J = particles[i].F.determinant();
+//        particles[i].mu = mu0 * std::exp(xi * (1.0f - J));
+//        particles[i].lambda = lambda0 * std::exp(xi * (1.0f - J));
+//        particles[i].Stress = 2.0f * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0f) * J * FInvTrans;
+//        if (particles[i].Stress.hasNaN()) {
+//            std::cout << "NAN" << std::endl;
+//        }
 
         //Update particle positions
         particles[i].x += deltaTime * particles[i].v;
@@ -375,7 +376,7 @@ void ParticleGrid::populateParticles() {
     for(int i = 0; i < numParticles; ++i) {
         ps.push_back(particles[i].x);
     }    
-    if(iter % 60 == 0) {
+    if(iter % 20 == 0) {
         QString name = QString("frame" + QString::number(frameNumber));
         writer.writeObjs(ps, name);
         std::cout << "Wrote frame" << frameNumber << std::endl;

@@ -262,7 +262,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
         std::cout << "Begin poisson" << std::endl;
 
-        Eigen::Vector3f point0 = randomPointInBound(0.3, 0.7, 0.3, 0.7, 0.3, 0.7);
+        Eigen::Vector3f point0 = randomPointInBound(0.45, 0.55, 0.45, 0.55, 0.45, 0.55);
         points.push_back(point0);
         activeSamples.push_back(index);
         bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);

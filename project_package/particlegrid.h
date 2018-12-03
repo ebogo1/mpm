@@ -18,11 +18,11 @@ public:
 
     int numParticles; // # of particles in simulation
 
-    float deltaTime = 0.000001f; // Duration of one step
+    float deltaTime = 0.01f; // Duration of one step
 
     /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
-    const static int gridDims = 20;  // Specify number of non-border grid cells along an axis
+    const static int gridDims = 32;  // Specify number of non-border grid cells along an axis
     const static int numCells = (gridDims + 3) * (gridDims + 3) * (gridDims + 3); // # of grid cells, (gridDims + 2)^3
     float gridSize;
     int Xdim;
@@ -59,7 +59,7 @@ public:
     // Returns w_ip of particle with position pPos to grid[x][y][z]
     Eigen::Vector3f computeWeight(Eigen::Vector3f pPos, int x, int y, int z);
 
-    // Returns gradient of w_ip of particle with position pPos to grid[x][y][z]
+    // Returns gradient of w_ip of particle with position pPos to cell c
     Eigen::Vector3f computeWeightGradient(Eigen::Vector3f pPos, int c);
 
     // Sets appropriate weighted values for each cell (P2G)

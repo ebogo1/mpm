@@ -19,7 +19,8 @@ SOURCES += \
     particlewriter.cpp \
     particlegrid.cpp \
     particle.cpp \
-    poisson.cpp
+    poisson.cpp \
+    transformation.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -30,6 +31,7 @@ HEADERS += \
     particlewriter.h \
     particlegrid.h \
     particle.h \
-    poisson.h
+    poisson.h \
+    transformation.h
 
 INCLUDE += Eigen

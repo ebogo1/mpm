@@ -4,6 +4,7 @@
 #include <particle.h>
 #include <poisson.h>
 #include <particlewriter.h>
+#include <transformation.h>
 #include "Eigen/Eigen/StdVector"
 #include "Eigen/Eigen/Eigen"
 

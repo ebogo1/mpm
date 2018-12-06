@@ -18,8 +18,13 @@ ParticleGrid::ParticleGrid() {
     std::cout << "lambda0 is " << lambda0 << std::endl;
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
+
     // Initialize Particles
     std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.037, 16);
+    Transformation transform = Transformation(Eigen::Vector3f(0, 0, 0), Eigen::Vector3f(0.f, 0.f, 0.f));
+    transform.origin = Eigen::Vector3f(0.5, 0.5, 0.5);
+    transform.Transform(positions);
+
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);

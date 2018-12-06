@@ -16,6 +16,13 @@ static Eigen::Vector3f randomPointInBound(float xmin, float xmax, float ymin, fl
     return Eigen::Vector3f(x, y, z);
 }
 
+static Eigen::Vector3f randomPointInSphere(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax) {
+    float x = randomFloat() * (xmax - xmin) + xmin;
+    float y = randomFloat() * (ymax - ymin) + ymin;
+    float z = randomFloat() * (zmax - zmin) + zmin;
+    return Eigen::Vector3f(x, y, z);
+}
+
 static Eigen::Vector3f randomPointAroundPoint(Eigen::Vector3f source, float r) {
     float yaw = randomFloat() * 3.1415926 * 2;
     float pitch = randomFloat() * 3.1415926 * 2;
@@ -262,7 +269,9 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
         std::cout << "Begin poisson" << std::endl;
 
-        Eigen::Vector3f point0 = randomPointInBound(0.45, 0.55, 0.45, 0.55, 0.45, 0.55);
+        float offset = 0.29f;
+
+        Eigen::Vector3f point0 = randomPointInBound(0.45, 0.55, 0.45 + offset, 0.55 + offset, 0.45, 0.55);
         points.push_back(point0);
         activeSamples.push_back(index);
         bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);
@@ -303,7 +312,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
                 }
 
 
-                if (isPointInBounds(point, 0.3, 0.7, 0.3, 0.7, 0.3, 0.7) && farFromOthers) {
+                if (isPointInBounds(point, 0.3, 0.7, 0.3 + offset, 0.7 + offset, 0.3, 0.7) && farFromOthers) {
                     points.push_back(point);
                     activeSamples.push_back(index);
                     bgGrid[(int)std::floor(point[0] * r)][(int)std::floor(point[1] * r)][(int)std::floor(point[2] * r)].push_back(index++);

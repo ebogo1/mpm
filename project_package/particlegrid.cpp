@@ -5,12 +5,13 @@
 ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
-    nu = 0.4f; // Poisson's ratio
+
+    nu = 0.44f; // Poisson's ratio
     k = 20.f; // Young's modulus
     xi = 10.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
-    float density = 2.f;
+    float density = 1.2f;
     float volume = 0.064f;
 
     std::cout << "mu0 is " << mu0 << std::endl;
@@ -18,7 +19,7 @@ ParticleGrid::ParticleGrid() {
 
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.045, 16);
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.037, 16);
     // Write init state to .obj
     QString name = QString("init");
     writer.writeObjs(positions, name);

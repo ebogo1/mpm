@@ -6,10 +6,12 @@ ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
     nu = 0.4f; // Poisson's ratio
-    k = 150000.f; // Young's modulus
-    xi = 5.0f;
+    k = 50.f; // Young's modulus
+    xi = 10.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
+    float density = 2.f;
+    float volume = 0.064f;
 
     std::cout << "mu0 is " << mu0 << std::endl;
     std::cout << "lambda0 is " << lambda0 << std::endl;
@@ -23,7 +25,7 @@ ParticleGrid::ParticleGrid() {
 
     particles = std::vector<Particle>();
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, 1.f/((float)positions.size()), 0.064/((float)positions.size()), mu0, lambda0);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), i, (density * volume)/((float)positions.size()), volume/((float)positions.size()), mu0, lambda0);
         particles.push_back(p);
     }
     numParticles = positions.size();
@@ -238,12 +240,12 @@ void ParticleGrid::runGridUpdate() {
 
         // Compute next iteration's cell velocities
         if(mass[i] > 0.f) {
-            force[i][1] -= mass[i] * 9.8f; // gravity
+            force[i][1] -= mass[i] * 10.f; // gravity
             velocity[i] += deltaTime * force[i] / mass[i];
-            velocity[i] *= 0.99f;
+            //velocity[i] *= 0.99f;
 
             // Clamp velocities inside wall cells
-            //resolveCollisions(i);
+            resolveCollisions(i);
         }
     }
 }
@@ -251,7 +253,7 @@ void ParticleGrid::runGridUpdate() {
 void ParticleGrid::resolveCollisions(int index) {
     Eigen::Vector3i indices = getCellIndices(index);
     for(int i = 0; i < 3; i++) {
-        if(indices[i] < 10 || indices[i] > gridDims - 3) {
+        if(indices[i] < 5 || indices[i] > gridDims - 3) {
             velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);            
             return;
         }

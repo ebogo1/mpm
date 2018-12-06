@@ -361,14 +361,21 @@ void ParticleGrid::populateParticles() {
         }
         Eigen::Matrix3f matSigma = Sigma.asDiagonal();
         particles[i].Fe = U * matSigma * Vt;
+        particles[i].Fp = V * matSigma.inverse() * U.transpose() * F;
 
         // Update particle stress
+        Eigen::Matrix3f Fe = particles[i].Fe;
         Eigen::Matrix3f R = U * Vt;
         Eigen::Matrix3f FInvTrans = computeInvTrans(F);
         float J = particles[i].F.determinant();
+        float J_e = particles[i].Fe.determinant();
+        float J_p = particles[i].Fp.determinant();
+        float mu_p = particles[i].mu * std::exp(10 * (1 - J_p));
+        float lambda_p = particles[i].lambda * std::exp(10 * (1 - J_p));
+
         particles[i].mu = mu0 * std::exp(xi * (1.0f - J));
         particles[i].lambda = lambda0 * std::exp(xi * (1.0f - J));
-        particles[i].Stress = 2.0f * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0f) * J * FInvTrans;
+        particles[i].Stress = 2.0f * mu_p * (Fe - R) + lambda_p * (J_e - 1.0f) * J_e * FInvTrans;
         if (particles[i].Stress.hasNaN()) {
             //std::cout << "NAN" << std::endl;
         }

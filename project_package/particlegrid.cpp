@@ -364,7 +364,7 @@ void ParticleGrid::populateParticles() {
         particles[i].Fp = V * matSigma.inverse() * U.transpose() * F;
 
         // Update particle stress
-        Eigen::Matrix3f Fe = particles[i].Fe;
+        Fe = particles[i].Fe;
         Eigen::Matrix3f R = U * Vt;
         Eigen::Matrix3f FInvTrans = computeInvTrans(F);
         float J = particles[i].F.determinant();

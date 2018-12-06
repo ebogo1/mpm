@@ -6,7 +6,7 @@ ParticleGrid::ParticleGrid() {
     thetaC = 2.5f * std::pow(10.0f, -2.0f);
     thetaS = 1.7f * std::pow(10.0f, -3.0f);
     nu = 0.4f; // Poisson's ratio
-    k = 50.f; // Young's modulus
+    k = 20.f; // Young's modulus
     xi = 10.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
@@ -252,11 +252,37 @@ void ParticleGrid::runGridUpdate() {
 
 void ParticleGrid::resolveCollisions(int index) {
     Eigen::Vector3i indices = getCellIndices(index);
+    bool colliding;
+    Eigen::Vector3f n(0.f, 0.f, 0.f);
     for(int i = 0; i < 3; i++) {
-        if(indices[i] < 5 || indices[i] > gridDims - 3) {
-            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);            
+        // dynamic friction
+        if(i == 1 && indices[i] > gridDims - 3) {
+            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);
             return;
         }
+        if((indices[i] < 5 && velocity[index][i] < 0.f)
+                || (indices[i] > gridDims - 3 && velocity[index][i] > 0.f)) {
+            //vt = vrel − nv
+            if(indices[i] < 5) {
+                n[i] = 1.f;
+            }
+            else {
+                n[i] = -1.f;
+            }
+            colliding = true;
+        }
+        // inelastic
+//        if(indices[i] < 5 || indices[i] > gridDims - 3) {
+//            velocity[index] = Eigen::Vector3f(0.f, 0.f, 0.f);
+//            return;
+//        }
+    }
+    if(colliding) {
+        float vn = velocity[index].dot(n);
+        Eigen::Vector3f vt = velocity[index] - n * vn;
+        //v′ = vt + μvnvt/∥vt∥
+        float friction = 0.62f;
+        velocity[index] = vt + friction * vn * vt / vt.norm();
     }
 }
 
@@ -360,11 +386,11 @@ void ParticleGrid::populateParticles() {
             Sigma[j] = std::min(std::max(Sigma[j], 1-thetaC), 1-thetaS);
         }
         Eigen::Matrix3f matSigma = Sigma.asDiagonal();
-        particles[i].Fe = U * matSigma * Vt;
-        particles[i].Fp = V * matSigma.inverse() * U.transpose() * F;
+        Fe = U * matSigma * Vt;
+        particles[i].Fe = Fe;
+        particles[i].Fp = Fe.inverse() * F;
 
-        // Update particle stress
-        Eigen::Matrix3f Fe = particles[i].Fe;
+        // Update particle stress        
         Eigen::Matrix3f R = U * Vt;
         Eigen::Matrix3f FInvTrans = computeInvTrans(F);
         float J = particles[i].F.determinant();
@@ -375,10 +401,10 @@ void ParticleGrid::populateParticles() {
 
         particles[i].mu = mu0 * std::exp(xi * (1.0f - J));
         particles[i].lambda = lambda0 * std::exp(xi * (1.0f - J));
+        // Plastic
         particles[i].Stress = 2.0f * mu_p * (Fe - R) + lambda_p * (J_e - 1.0f) * J_e * FInvTrans;
-        if (particles[i].Stress.hasNaN()) {
-            //std::cout << "NAN" << std::endl;
-        }
+        // Elastic
+        //particles[i].Stress = 2.0f * particles[i].mu * (F - R) + particles[i].lambda * (J - 1.0f) * J * FInvTrans;
 
         //Update particle positions
         particles[i].x += deltaTime * particles[i].v;

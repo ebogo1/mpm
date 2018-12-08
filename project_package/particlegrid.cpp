@@ -3,16 +3,16 @@
 
 #include "iostream"
 ParticleGrid::ParticleGrid() {
-    thetaC = 2.5f * std::pow(10.0f, -2.0f);
-    thetaS = 1.7f * std::pow(10.0f, -3.0f);
+    thetaC = 2.5e-6;
+    thetaS = 1.7e-8;
 
     nu = 0.44f; // Poisson's ratio
-    k = 20.f; // Young's modulus
+    k = 200.f; // Young's modulus
     xi = 10.0f;
     mu0 = k/(2.0f * (1.0f + nu));
     lambda0 = (k * nu)/((1.0f + nu) * (1.0f - 2.0f * nu));
     float density = 1.2f;
-    float volume = 0.064f;
+    float volume = 0.11f;
 
     std::cout << "mu0 is " << mu0 << std::endl;
     std::cout << "lambda0 is " << lambda0 << std::endl;
@@ -20,8 +20,8 @@ ParticleGrid::ParticleGrid() {
     gridSize = 1.f / (float)(ParticleGrid::gridDims);
 
     // Initialize Particles
-    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.037, 16);
-    Transformation transform = Transformation(Eigen::Vector3f(0, 0, 0), Eigen::Vector3f(0.f, 0.f, 0.f));
+    std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> positions = Poisson::initialize(0.025, 16);
+    Transformation transform = Transformation(Eigen::Vector3f(0, 0, 0), Eigen::Vector3f(0.f, 0.0f, 0.f));
     transform.origin = Eigen::Vector3f(0.5, 0.5, 0.5);
     transform.Transform(positions);
 
@@ -30,11 +30,15 @@ ParticleGrid::ParticleGrid() {
     writer.writeObjs(positions, name);
 
     particles = std::vector<Particle>();
+    int pIndex = 0;
     for(int i = 0; i < positions.size(); ++i) {
-        Particle p = Particle(Eigen::Vector3f(positions[i]), i, (density * volume)/((float)positions.size()), volume/((float)positions.size()), mu0, lambda0);
-        particles.push_back(p);
+        Particle p = Particle(Eigen::Vector3f(positions[i]), pIndex, (density * volume)/((float)positions.size()), volume/((float)positions.size()), mu0, lambda0);
+        if (p.x[0] >= 0.0 && p.x[0] <= 1.0 && p.x[1] >= 0.0 && p.x[1] <= 1.0 && p.x[2] >= 0.0 && p.x[2] <= 1.0) {
+            particles.push_back(p);
+            pIndex++;
+        }
     }
-    numParticles = positions.size();
+    numParticles = particles.size();
     writer = ParticleWriter();
     iter = 0;
     frameNumber = 0;
@@ -427,7 +431,7 @@ void ParticleGrid::populateParticles() {
     for(int i = 0; i < numParticles; ++i) {
         ps.push_back(particles[i].x);
     }    
-    if(iter % 60 == 0) {
+    if(iter % 30 == 0) {
         QString name = QString("frame" + QString::number(frameNumber));
         writer.writeObjs(ps, name);
         std::cout << "Wrote frame" << frameNumber << std::endl;

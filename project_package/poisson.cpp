@@ -16,11 +16,18 @@ static Eigen::Vector3f randomPointInBound(float xmin, float xmax, float ymin, fl
     return Eigen::Vector3f(x, y, z);
 }
 
-static Eigen::Vector3f randomPointInSphere(float xmin, float xmax, float ymin, float ymax, float zmin, float zmax) {
-    float x = randomFloat() * (xmax - xmin) + xmin;
-    float y = randomFloat() * (ymax - ymin) + ymin;
-    float z = randomFloat() * (zmax - zmin) + zmin;
-    return Eigen::Vector3f(x, y, z);
+static Eigen::Vector3f randomPointInSphere(float radius, float centerX, float centerY, float centerZ) {
+    float d = radius + 1;
+    Eigen::Vector3f vec = Eigen::Vector3f(0, 0, 0);
+    while (d >= radius) {
+        float x = randomFloat() * radius * 2 - radius;
+        float y = randomFloat() * radius * 2 - radius;
+        float z = randomFloat() * radius * 2 - radius;
+
+        Eigen::Vector3f vec = Eigen::Vector3f(x, y, z);
+        d = vec.norm();
+    }
+    return vec + Eigen::Vector3f(centerX, centerY, centerZ);
 }
 
 static Eigen::Vector3f randomPointAroundPoint(Eigen::Vector3f source, float r) {
@@ -42,6 +49,11 @@ static bool isPointInBounds(Eigen::Vector3f point, float xmin, float xmax, float
     if (point[2] < zmin) return false;
     if (point[2] > zmax) return false;
     return true;
+}
+
+static bool isPointInSphere(Eigen::Vector3f point, float radius, float centerX, float centerY, float centerZ) {
+    Eigen::Vector3f pointMoved = point - Eigen::Vector3f(centerX, centerY, centerZ);
+    return pointMoved.norm() <= radius;
 }
 
 static float vectorLength(Eigen::Vector3f v) {
@@ -269,9 +281,9 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
         std::cout << "Begin poisson" << std::endl;
 
-        float offset = 0.29f;
+        float offset = 0.0f;
 
-        Eigen::Vector3f point0 = randomPointInBound(0.45, 0.55, 0.45 + offset, 0.55 + offset, 0.45, 0.55);
+        Eigen::Vector3f point0 = randomPointInSphere(0.45, 0.5, 0.5, 0.5);
         points.push_back(point0);
         activeSamples.push_back(index);
         bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);
@@ -312,7 +324,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
                 }
 
 
-                if (isPointInBounds(point, 0.3, 0.7, 0.3 + offset, 0.7 + offset, 0.3, 0.7) && farFromOthers) {
+                if (isPointInSphere(point, 0.45, 0.5, 0.5, 0.5) && farFromOthers) {
                     points.push_back(point);
                     activeSamples.push_back(index);
                     bgGrid[(int)std::floor(point[0] * r)][(int)std::floor(point[1] * r)][(int)std::floor(point[2] * r)].push_back(index++);

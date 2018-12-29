@@ -21,7 +21,6 @@ public:
 
     float deltaTime = 0.0004f; // Duration of one step
 
-    /// TODO: generate particles with Poisson and initialize arrays appropriately
     // 3D grids mapped to 1D: grid[x][y][z] = grid[x + Ydim * (y + Zdim * z)]
     const static int gridDims = 25;  // Specify number of non-border grid cells along an axis
     const static int numCells = (gridDims + 3) * (gridDims + 3) * (gridDims + 3); // # of grid cells, (gridDims + 2)^3

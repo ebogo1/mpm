@@ -16,20 +16,6 @@ static Eigen::Vector3f randomPointInBound(float xmin, float xmax, float ymin, fl
     return Eigen::Vector3f(x, y, z);
 }
 
-static Eigen::Vector3f randomPointInSphere(float radius, float centerX, float centerY, float centerZ) {
-    float d = radius + 1;
-    Eigen::Vector3f vec = Eigen::Vector3f(0, 0, 0);
-    while (d >= radius) {
-        float x = randomFloat() * radius * 2 - radius;
-        float y = randomFloat() * radius * 2 - radius;
-        float z = randomFloat() * radius * 2 - radius;
-
-        Eigen::Vector3f vec = Eigen::Vector3f(x, y, z);
-        d = vec.norm();
-    }
-    return vec + Eigen::Vector3f(centerX, centerY, centerZ);
-}
-
 static Eigen::Vector3f randomPointAroundPoint(Eigen::Vector3f source, float r) {
     float yaw = randomFloat() * 3.1415926 * 2;
     float pitch = randomFloat() * 3.1415926 * 2;
@@ -51,33 +37,9 @@ static bool isPointInBounds(Eigen::Vector3f point, float xmin, float xmax, float
     return true;
 }
 
-static bool isPointInSphere(Eigen::Vector3f point, float radius, float centerX, float centerY, float centerZ) {
-    Eigen::Vector3f pointMoved = point - Eigen::Vector3f(centerX, centerY, centerZ);
-    return pointMoved.norm() <= radius;
-}
-
 static float vectorLength(Eigen::Vector3f v) {
     return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
-
-/*static bool pointIsFarFromOthers(Eigen::Vector3f point, std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> others, std::vector<int> bgGrid[][][], float r) {
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dz = -1; dz <= 1; dz++) {
-                int x = std::floor(point[0] + dx);
-                int y = std::floor(point[1] + dy);
-                int z = std::floor(point[2] + dz);
-                for (int i = 0; i < bgGrid[x][y][z].size(); i++) {
-                    int pointID = bgGrid[x][y][z].at(i);
-                    Eigen::Vector3f p2 = others[pointID];
-                    float dist = vectorLength(point - p2);
-                    if (dist < r) return false;
-                }
-                return true;
-            }
-        }
-    }
-}*/
 
 static bool tryParseDouble(const char *s, const char *s_end, double *result)
 {
@@ -281,9 +243,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
 
         std::cout << "Begin poisson" << std::endl;
 
-        float offset = 0.0f;
-
-        Eigen::Vector3f point0 = randomPointInSphere(0.45, 0.5, 0.5, 0.5);
+        Eigen::Vector3f point0 = randomPointInBound(0.45, 0.55, 0.45, 0.55, 0.45, 0.55);
         points.push_back(point0);
         activeSamples.push_back(index);
         bgGrid[(int)std::floor(point0[0] * r)][(int)std::floor(point0[1] * r)][(int)std::floor(point0[2] * r)].push_back(index++);
@@ -324,7 +284,7 @@ std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> Poisson:
                 }
 
 
-                if (isPointInSphere(point, 0.45, 0.5, 0.5, 0.5) && farFromOthers) {
+                if (isPointInBounds(point, 0.35, 0.65, 0.35, 0.65, 0.35, 0.65) && farFromOthers) {
                     points.push_back(point);
                     activeSamples.push_back(index);
                     bgGrid[(int)std::floor(point[0] * r)][(int)std::floor(point[1] * r)][(int)std::floor(point[2] * r)].push_back(index++);

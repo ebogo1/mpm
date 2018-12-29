@@ -1,24 +1,15 @@
-# mpm
-in-progress implementation of the material point method for fluids, for Dr. Chenfanfu Jiang's CIS-563 course
 
-Water alpha (Password: ingusbingus)
+# MPM Implementation
+Simulation of viscoelastic fluids using the Material Point Method. Collaborative project with [Josh Nadel](https://github.com/bobmowzie). 
 
-https://vimeo.com/299253537
+## Project Report
+A writeup outlining the MPM algorithm, implementation details, and code structure can be found here: [project_report.pdf](project_report.pdf)
 
-APIC alpha (Password: ingusbingus)
+## Results
+Elasticity model -
+* [particles](https://vimeo.com/305176352) (vimeo.com)
+* [render](https://vimeo.com/305175506) (vimeo.com)
 
-https://vimeo.com/299253291
-
-Neo-Hookean beta (Password: regoopify)
-
-https://vimeo.com/301884431
-
-https://vimeo.com/301891750
-
-https://vimeo.com/301882308
-
-https://vimeo.com/301882315
-
-Gravity beta (Password: regoopify)
-
-https://vimeo.com/301900759
+Plasticity + Elasticity model -
+* [particles](https://vimeo.com/305176389) (vimeo.com)
+* [render](https://vimeo.com/305175752) (vimeo.com)
